@@ -1,10 +1,6 @@
-from math import trunc
-from wsgiref.util import request_uri
-
-from sqlalchemy import Float
 
 from QUANLIHOCSINH import app, login
-from flask import render_template, request, url_for, redirect, jsonify, session
+from flask import render_template, request, url_for, redirect, session
 from flask_login import login_user, logout_user, current_user
 import utils
 
@@ -103,13 +99,6 @@ def confirmpassemail():
                 return render_template("signup.html",flag = "need_confirm",error_mess=str(ex))
 
     return redirect(url_for('index'))
-
-
-# @app.route('/')
-# def confirm_email():
-#     if request.method == "POST":
-#         email = request.form["email-confirm"]
-#         ma = request.form["email-confirm"]
 
 
 @app.context_processor

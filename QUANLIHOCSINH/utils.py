@@ -54,7 +54,6 @@ def Load_Permission_User(id):
     return Role_user
 
 
-
 def Get_User_By_ID(id):
     return models.Account.query.get(id)
 
@@ -67,7 +66,6 @@ def ToAccountID():
 def Get_MonHoc_By_TenMonHoc(TenMonHoc):
     monhoc = models.MonHoc.query.filter(models.MonHoc.TenMonHoc.__eq__(TenMonHoc)).first()
     return monhoc.MaMonHoc if monhoc else None
-
 
 
 def Add_User(username, passw, ho, ten, ngaysinh, gioitinh, diachi, email,image,permission, TenMonHoc, sdt,*kwargs):
@@ -116,7 +114,6 @@ def Send_Email(PassConfirm, email_rec):
     email_send = email_rec
     mail_content = PassConfirm
 
-
     smtp_session  = smtplib.SMTP('smtp.gmail.com', 587)
     smtp_session .starttls()
     smtp_session .login(email, passw)  #
@@ -127,12 +124,10 @@ def Send_Email(PassConfirm, email_rec):
     message['Subject'] = "Mã xác nhận"
     message.attach(MIMEText(mail_content, 'plain'))
 
-
     smtp_session .sendmail(email, email_send, message.as_string())
 
     smtp_session .quit()
     print("Email đã được gửi thành công!")
-
 
 
 def add_HocSinh(diemdauvao,ho, ten, ngaysinh, gioitinh, diachi, email,image, *kwargs):
@@ -146,7 +141,6 @@ def add_HocSinh(diemdauvao,ho, ten, ngaysinh, gioitinh, diachi, email,image, *kw
     db.session.add(inforHocSinh)
     db.session.commit()
 
-
 def Cnt_Sum_HocSinh_Not_Lop():
     so_luong_hoc_sinh_chua_co_lop = (
         db.session.query(func.count(models.HocSinh.MaHocSinh))
@@ -159,21 +153,45 @@ def Cnt_Sum_HocSinh_Not_Lop():
 def Cnt_Sum_Lop(khoi):
     return db.session.query(func.count(models.Lop.MaKhoi)).filter(models.Khoi.MaKhoi.__eq__(khoi)).scalar()
 
+
 def HocSinhNotLop(tb):
-    HocSinhNotLop = db.session.query(models.HocSinh.MaHocSinh) \
+    HocSinhNotLop = db.session.query(models.HocSinh) \
         .filter(models.HocSinh.MaHocSinh.notin_(
             db.session.query(models.LopHocSinh.MaHocSinh)
         )) \
         .order_by(models.HocSinh.DiemTbDauVao.desc()) \
         .limit(tb) \
         .all()
-    return [hocsinh[0] for hocsinh in HocSinhNotLop]
+    return HocSinhNotLop
 
+def Get_Sum_HS_Lop(malop):
+    return db.session.query(func.count(models.LopHocSinh.MaHocSinh)).filter(models.LopHocSinh.MaLop.__eq__(malop)).scalar()
+
+
+def Insert_HS_Remain(sohocsinhconlai, solopcanchia, tb, remaining):
+    if sohocsinhconlai <= 0 or not remaining:
+        return 0
+
+    condition = int(40 - tb)
+    if len(remaining) >= condition:
+        for i in range(1, condition + 1):
+            lophocsinh = models.LopHocSinh(MaLop="L10A" + str(solopcanchia), MaHocSinh=remaining[i - 1].MaHocSinh)
+            db.session.add(lophocsinh)
+    else:
+        for i in range(1, len(remaining) + 1):
+            lophocsinh = models.LopHocSinh(MaLop="L10A" + str(solopcanchia), MaHocSinh=remaining[i - 1].MaHocSinh)
+            db.session.add(lophocsinh)
+
+    db.session.commit()
+    sohocsinhconlai = sohocsinhconlai -  int(min(condition, len(remaining)))
+    print(sohocsinhconlai)
+    remaining = HocSinhNotLop(sohocsinhconlai) if sohocsinhconlai > 0 else []
+    print(len(remaining))
+    return Insert_HS_Remain(sohocsinhconlai, solopcanchia - 1, tb, remaining)
 
 def Division_Class(solopcanchia):
 
     tb = Cnt_Sum_HocSinh_Not_Lop() / solopcanchia
-
     if tb >= 40:
         return 0
     for i in range(1, solopcanchia + 1):
@@ -181,10 +199,15 @@ def Division_Class(solopcanchia):
         db.session.add(lop)
         db.session.commit()
         HocSinh = HocSinhNotLop(int(tb))
-        for ma_hoc_sinh in HocSinh:
-            lophocsinh = models.LopHocSinh(MaLop="L10A" + str(i), MaHocSinh=ma_hoc_sinh)
+        for j in HocSinh:
+            lophocsinh = models.LopHocSinh(MaLop="L10A" + str(i), MaHocSinh=j.MaHocSinh)
             db.session.add(lophocsinh)
         db.session.commit()
+    remaining = HocSinhNotLop(Cnt_Sum_HocSinh_Not_Lop())
+    print(len(remaining))
+    if len(remaining) >=0:
+        Insert_HS_Remain(len(remaining), int(solopcanchia), int(tb), remaining)
+
 
 
 # Ho = [ "Huỳnh", "Nguyễn", "Thanh", "La" ]
@@ -216,7 +239,7 @@ def Division_Class(solopcanchia):
 
 if __name__ == '__main__':
     with app.app_context():
-        print(HocSinhNotLop(9))
+        print(Cnt_Sum_HocSinh_Not_Lop())
 
 
 

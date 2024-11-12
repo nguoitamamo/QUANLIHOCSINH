@@ -69,16 +69,7 @@
             <li class="nav-item">
                 <a href="{{url_for('index')}}" class="nav-link active text-dark">Trang Chủ</a>
             </li>
-            <!--            <li class="nav-item dropdown">-->
-            <!--                <a href="" class="nav-link active text-dark dropdown-toggle" id="DropdownID-ChucNang" role="button">Chức-->
-            <!--                    năng</a>-->
-
-            <!--                <ul class="dropdown-menu" aria-labelledby="DropdownID-ChucNang">-->
-
-            <!--                </ul>-->
-            <!--            </li>-->
             {% if current_user.is_authenticated %}
-
             {% block role %}
                 {% for role in roles %}
                     {% for key in role.keys() %}
@@ -88,7 +79,6 @@
                     {% endfor %}
                 {% endfor %}
             {% endblock %}
-
             <li class="nav-item">
                 <a href="{{url_for('capnhatthongtin')}}" class="nav-link active text-dark">Cập nhật thông tin</a>
             </li>
