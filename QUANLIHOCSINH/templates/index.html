@@ -1,0 +1,69 @@
+{% extends "layout/base.html" %}
+{% block title %}Trang chu{% endblock %}
+{% block css %}
+
+{% endblock %}
+
+
+
+{% block content %}
+
+
+
+    <main>
+        <div class="features">
+            <div class="highlight">
+                <h2>TRƯỜNG THPT NGUYỄN DIÊU</h2>
+            </div>
+            <h4>Hệ thống quản lí điểm học sinh</h4>
+        </div>
+    </main>
+
+ <!-- danh sách tiện ích -->
+  <div class="container-dsti" id="dsti">
+    <h2 class="dsti"><br><br>HÌNH ẢNH NỔI BẬT</br></br></h2>
+    <div class="container-ti">
+      <div class="wrapper">
+        <i id="left" class="fa-solid fa-arrow-left"></i>
+        <ul class="slide-card">
+          <li class="card">
+            <div class="img">
+              <img src="{{url_for('static', filename='images/hinh4.jpg')}}" alt="" draggable="false" />
+            </div>
+          <li class="card">
+            <div class="img">
+              <img src="{{url_for('static', filename='images/hinh5.jpg')}}" alt="" draggable="false" />
+            </div>
+
+          </li>
+          <li class="card">
+            <div class="img">
+              <img src="{{url_for('static', filename='images/hinh6.jpg')}}" alt="" draggable="false" />
+            </div>
+
+          </li>
+         </ul>
+        <i id="right" class="fa-solid fa-arrow-right"></i>
+      </div>
+    </div>
+  </div>
+<!-- <div class="login-container" id="loginModal">-->
+<!--    <div class="login-box">-->
+<!--        <div class="login-image">-->
+<!--            <img src="{{url_for('static', filename='images/trangchu.png')}}" alt="Hệ thống quản lí học sinh">-->
+<!--        </div>-->
+<!--        <div class="login-form">-->
+<!--            <h2>HỆ THỐNG QUẢN LÍ HỌC SINH</h2>-->
+<!--            <h3>Đăng nhập</h3>-->
+<!--            <form action="/login" method="post">-->
+<!--                <input type="text" id="username" name="username" placeholder="Tên đăng nhập">-->
+<!--                <input type="password" id="password" name="password" placeholder="Mật khẩu">-->
+<!--                <a href="#" class="forgot-password"> <u>Quên mật khẩu</u></a>-->
+<!--                <button type="submit" class="login-button">Đăng Nhập</button>-->
+<!--            </form>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+<script src="{{url_for('static', filename='js/slidecard.js')}}"></script>
+{% endblock %}
+

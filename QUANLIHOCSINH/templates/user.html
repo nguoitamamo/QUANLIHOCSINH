@@ -1,0 +1,37 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Chức năng{%  endblock %}
+
+
+{% block content %}
+<main>
+    <div class="features">
+        <div class="highlight">
+            <h2>TRƯỜNG THPT NGUYỄN DIÊU</h2>
+        </div>
+        <h4>Hệ thống quản lí điểm học sinh</h4>
+    </div>
+</main>
+{% endblock %}
+
+
+{% block role %}
+
+    {% for role in roles %}
+        {% for key in role.keys() %}
+        <a href="{{ url_for(role[key]) }}" class="nav-link active text-dark">{{ key }}</a>
+        {% endfor %}
+    {% endfor %}
+
+{% endblock %}S
+
+
+<!--
+{% block signin %}
+ <button class="btn">{{name}}</button>
+{% endblock %}
+
+{% block signup %}
+    <a href="{{ url_for('logout') }}" class="btn btn-dark">Đăng xuất</a>
+{% endblock %}
+-->

@@ -1,0 +1,35 @@
+<div class="modal fade" id="modal-signup" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="login-box">
+                    <div class="login-image">
+                        <img src="{{url_for('static', filename='images/trangchu.png')}}"
+                             alt="Hệ thống quản lí học sinh">
+                    </div>
+                    <div class="login-form">
+                        <h2>HỆ THỐNG QUẢN LÍ HỌC SINH</h2>
+                        <h3>Đăng kí</h3>
+                        <form action="{{url_for('signup')}}" method="post">
+                            <input type="text" id="username-signup" name="username-signup"
+                                   placeholder="Tên đăng nhập" required>
+                            <input type="password" id="password-signup" name="password-signup"
+                                   placeholder="Mật khẩu" required>
+                            <input type="password" id="password-repeat" name="password-repeat"
+                                   placeholder="Nhập lại Mật khẩu" required>
+                            <button type="submit" class="login-button">Đăng kí</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng
+                </button>
+                <button type="button" id="btn-dangnhap-modal" class="btn btn-dark"
+                        data-bs-toggle="modal" data-bs-target="#modal-signin">Đăng nhập
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,54 @@
+{% extends "layout/base.html" %}
+{% block title %}{% endblock %}Signin{% block content %}
+{% block css %}
+<style>
+    .modal-header img {
+        width: 40px;
+        height: auto;
+        margin-left: 20px;
+        border-radius: 19px;
+    }
+
+    .modal-header h3 {
+        font-weight: bold;
+        margin: 10px auto 10px auto;
+    }
+
+
+</style>
+{% endblock %}
+{% if error_mess %}
+<div class="container col-5 mt-3">
+    <div class="alert alert-danger alert-dismissible">
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <strong>{{error_mess}}</strong>
+    </div>
+</div>
+{% endif %}
+
+
+
+<div class="form-login-container">
+    <div class="login-box">
+        <div class="login-image">
+            <img src="{{url_for('static', filename='images/trangchu.png')}}"
+                 alt="Hệ thống quản lí học sinh">
+        </div>
+        <div class="login-form">
+            <h2>HỆ THỐNG QUẢN LÍ HỌC SINH</h2>
+            <h3>Đăng nhập</h3>
+            <form action="{{url_for('signinuser')}}" method="post">
+                <input type="text" id="username-signin" name="username-signin"
+                       placeholder="Tên đăng nhập" required>
+                <input type="password" id="password-signin" name="password-signin"
+                       placeholder="Mật khẩu" required>
+                <a href="#" class="forgot-password" data-bs-toggle="modal" data-bs-target="#modal-forgot-pass"> <u>Quên
+                    mật khẩu</u></a>
+
+                <button type="submit" class="login-button">Đăng Nhập</button>
+            </form>
+            <p>Chưa có tài khoản <a href="{{url_for('signup')}}">Đăng kí</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
