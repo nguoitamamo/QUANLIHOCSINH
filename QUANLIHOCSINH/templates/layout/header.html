@@ -1,0 +1,48 @@
+<div class="navbar navbar-expand-md " style=" background: #d5d559;">
+    <a href="" class="navbar-brand">
+        <img src="{{url_for('static', filename='images/logo.jpg')}}" alt="logo THPT NguyenDieu">
+    </a>
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"><i class="fa-solid fa-house"></i></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a href="{{url_for('index')}}" class="nav-link active text-dark">Trang chủ</a>
+            </li>
+            {% if current_user.is_authenticated %}
+            {% block role %}
+            {% for role in roles %}
+            {% for key in role.keys() %}
+            <li class="nav-item">
+                <a href="{{ url_for(role[key]) }}" class="nav-link active text-dark">{{ key }}</a>
+            </li>
+            {% endfor %}
+            {% endfor %}
+            {% endblock %}
+            <li class="nav-item">
+                <a href="{{url_for('capnhatthongtin')}}" class="nav-link active text-dark">Cập nhật thông tin</a>
+            </li>
+            <div class="d-flex">
+                <li class="nav-item">
+                    <a href="{{ url_for('logout') }}" class="btn  me-3">{{ current_user.TenDangNhap }}</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('logout') }}" class="btn btn-dark">Đăng xuất</a>
+                </li>
+            </div>
+            {% else %}
+            <li class="nav-item">
+                <a href="" class="nav-link active text-dark">Tin tức</a>
+            </li>
+            <li class="nav-item">
+                <a class="btn" href="{{url_for('signin')}}">Đăng nhập</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="btn btn-dark" href="{{url_for('signup')}}">Đăng kí</a>
+            </li>
+        </ul>
+        {% endif %}
+    </div>
+</div>

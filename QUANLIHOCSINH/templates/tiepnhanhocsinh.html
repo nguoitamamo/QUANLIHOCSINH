@@ -1,0 +1,254 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Tiếp nhận học sinh{% endblock %}
+
+{% block css %}
+<head>
+    <link rel="stylesheet" href="{{url_for('static', filename= 'css/w3.css')}}">
+</head>
+<style>
+    .w3-container p {
+        margin-top: 10px
+    }
+
+    .w3-container p input {
+        width: 83%;
+        height: 35px;
+        background-size: 16px 12px;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+    }
+
+    .w3-infor p {
+        margin-top: 30px;
+    }
+
+    .form-select-permission {
+        width: 83%;
+        padding: .375rem 2.25rem .375rem .75rem;
+        -moz-padding-start: calc(0.75rem - 3px);
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right .75rem center;
+        background-size: 16px 12px;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+</style>
+{% endblock %}
+
+{% block role %}
+{% for role in roles %}
+{% for key in role.keys() %}
+<li class="nav-item">
+    <a href="{{ url_for(role[key]) }}" class="nav-link active text-dark">{{ key }}</a>
+</li>
+{% endfor %}
+{% endfor %}
+{% endblock %}
+
+
+{% block content %}
+{% if mess %}
+<div class="container col-5 mt-3">
+    <div class="alert alert-danger alert-dismissible">
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <strong>{{mess}}</strong>
+    </div>
+</div>
+{% endif %}
+
+<form action="{{ url_for('SaveInforHocSinh', TenDangNhap=current_user.TenDangNhap) }}" method="post">
+    <div class="w3-content w3-margin-top" style="max-width:80%; margin: 10%">
+        <div class="w3-row-padding">
+
+            <div class="w3-third">
+                <div class="w3-white w3-text-grey w3-card-4" style="border-radius: 10px; height: 546px;">
+                    <div class="w3-display-container">
+                        <img src="{{url_for('static', filename='images/avatarhocsinh.png')}}"
+                             style="width:100%; border-radius: 10px;" alt="Avatar">
+                    </div>
+                    <div class="w3-container w3-infor">
+                        <p>
+                            <i class="fa fa-briefcase fa-fw w3-margin-right w3-large w3-text-teal"></i>
+                            <select class="form-select-permission" name="sellist1">
+                                <option selected>Học sinh</option>
+                            </select>
+                        </p>
+                        <p>
+                            <i class="fa fa-home fa-fw w3-margin-right w3-large w3-text-teal"></i>
+                            <input type="text" name="diachi" placeholder="  Địa chỉ..">
+                        </p>
+                        <p>
+                            <i class="fa fa-envelope fa-fw w3-margin-right w3-large w3-text-teal"></i>
+                            <input type="Email" name="email" placeholder="  Email..">
+                        </p>
+
+                        <p>
+                            <i class="fa fa-phone fa-fw w3-margin-right w3-large w3-text-teal"></i>
+                            <input type="text" name="sdt" placeholder="  Số điện thoại..">
+
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="w3-twothird">
+
+                <div class="w3-container w3-card w3-white w3-margin-bottom" style="border-radius: 10px;">
+                    <h2 class="w3-text-grey w3-padding-16">
+                        <i class="fa-solid fa-user"></i><span>Thông tin học sinh</span></h2>
+                    <div class="container">
+                        <div class="w3-container">
+                            <p>
+                                <i class="fa-solid fa-person"></i>
+                                <input type="text" name="firstname" placeholder="  Frist Name ...">
+                            </p>
+                        </div>
+                        <div class="w3-container">
+                            <p>
+                                <i class="fa-solid fa-person"></i>
+                                <input type="text" name="lastname" placeholder="  Last Name ...">
+                            </p>
+                        </div>
+                        <div class="w3-container">
+                            <p>
+                                <i class="fa-solid fa-cake-candles"></i>
+                                <input type="date" name="ngaysinh">
+                            </p>
+                        </div>
+                        <div class="w3-container">
+                            <p>
+                                <i class="fa-solid fa-person"></i>
+                                <select class="form-select-permission" name="gioitinh">
+                                    <option selected>Nam</option>
+                                    <option>Nữ</option>
+                                    <option>Khác</option>
+                                </select>
+                            </p>
+                        </div>
+                        <div class="w3-container" style="margin-bottom: 10px;">
+
+                            <p>
+                                <i class="fa-solid fa-person"></i>
+                                <input type="text" name="diemTbDauVao" placeholder="  Điểm đầu vào">
+                            </p>
+                        </div>
+                    </div>
+                    <div style="text-align: right">
+                        <button class="btn-save-infor-hocsinh" type="submit">Lưu</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</form>
+
+<div style="text-align: right">
+    <button class="btn-save-infor-hocsinh" data-bs-toggle="modal" data-bs-target="#modal_upload_file"><i
+            class="fa-solid fa-arrow-right"></i> Tải file
+    </button>
+</div>
+<div class="modal" id="modal_upload_file">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">UpLoad file danh sách học sinh</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{url_for('uploaddanhsachhocsinh')}}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Chọn tệp Excel:</label>
+                        {% if file %}
+                        <input type="file" name="file" class="form-control" id="file_old" accept=".xlsx,.xls" value="{{file}}">
+                        {% else %}
+                        <input type="file" name="file" class="form-control" id="file" accept=".xlsx,.xls">
+                        {% endif %}
+
+
+                    </div>
+                    <div style="text-align: right;margin: 0 20px 15px;">
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container mt-3">
+    <ul class="pagination">
+        <li class="page-item"><a class="page-link" href="#">Trang</a></li>
+        {% for i in range(1, 13) %}
+        <li class="page-item"><a class="page-link" href="{{ url_for('dividelistdshocsinh', page = i) }}">{{i}}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+
+
+<div class="container mt-3" id="div_danhsachhocsinh">
+    <h2>Danh sách học sinh</h2>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>STT</th>
+            <th>Họ</th>
+            <th>Tên</th>
+            <th>Điểm</th>
+            <th>Giới tính</th>
+            <th>Năm sinh</th>
+            <th>Địa chỉ</th>
+            <th>Email</th>
+            <th>Số điện thoại</th>
+
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in data %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ row['Họ'] }}</td>
+            <td>{{ row['Tên'] }}</td>
+            <td>{{ row['Điểm'] | round(1) }}</td>
+            <td>{{ row['Giới tính'] }}</td>
+            <td>{{ row['Ngày sinh'].strftime('%Y') }}</td>
+            <td>{{ row['Địa chỉ'] }}</td>
+            <td>{{ row['Email'] }}</td>
+            <td>{{ row['Số điện thoại'] }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+
+    </table>
+</div>
+
+<div style="text-align: right">
+    <button class="btn-save-infor-hocsinh" data-bs-toggle="modal" data-bs-target="#modal_upload_file"> Lưu
+    </button>
+</div>
+
+{% block js %}
+<script>
+    document.getElementById('btn_upload_dshocsinh').addEventListener('click', function (event) {
+        const permission_giangvien = document.getElementById('div_danhsachhocsinh').style.display = "block"
+    });
+
+
+</script>
+{% endblock %}
+
+{% endblock %}

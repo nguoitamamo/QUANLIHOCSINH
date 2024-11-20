@@ -1,0 +1,129 @@
+{% extends "layout/base.html" %}
+{% block title %}{% endblock %}
+{% block css %}
+<style>
+    .modal-header img {
+        width: 40px;
+        height: auto;
+        margin-left: 20px;
+        border-radius: 19px;
+    }
+
+    .modal-header h3 {
+        font-weight: bold;
+        margin: 10px auto 10px auto;
+    }
+
+
+</style>
+{% endblock %}
+
+
+{% block content %}
+{% if error_mess %}
+<div class="container col-5 mt-3">
+    <div class="alert alert-danger alert-dismissible">
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <strong>{{error_mess}}</strong>
+    </div>
+</div>
+{% endif %}
+{% if state == "sent" %}
+<div class="form-login-container">
+    <div class="container modal-content" style="width: 614px; height: 250px;">
+        <div class="modal-header">
+            <img src="{{url_for('static', filename='images/logo.jpg')}}"
+                 alt="logo THPT NguyenDieu">
+            <h3>HỆ THỐNG QUẢN LÍ HỌC SINH</h3>
+        </div>
+        <div class="modal-body">
+            <form action="{{url_for('checkpass' , email = email )}}" method="POST">
+                <div>
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" name="pass-confirm-email" placeholder="Mã xác nhận"
+                           style="margin-top: 20px" required>
+                    <br>Nhập mã được gửi đến email.</br>
+                </div>
+
+                <button type="submit" class="login-button">
+                    Xác nhận
+                </button>
+
+            </form>
+        </div>
+    </div>
+</div>
+{% elif state == "confirmed" %}
+<div class="form-login-container">
+    <div class="login-box">
+        <div class="login-image">
+            <img src="{{url_for('static', filename='images/trangchu.png')}}"
+                 alt="Hệ thống quản lí học sinh">
+        </div>
+        <div class="login-form">
+            <h2>HỆ THỐNG QUẢN LÍ HỌC SINH</h2>
+            <h3>Đăng nhập</h3>
+            <form action="{{url_for('updatepass' , email = email)}}" method="post">
+                <input type="password" name="pass-new"
+                       placeholder="Mật khẩu mới" required>
+                <input type="password"  name="pass-new-confirm"
+                       placeholder="Nhập lại mật khẩu" required>
+
+                <button type="submit" class="login-button">Xác nhận</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="form-login-container">
+    <div class="login-box">
+        <div class="login-image">
+            <img src="{{url_for('static', filename='images/trangchu.png')}}"
+                 alt="Hệ thống quản lí học sinh">
+        </div>
+        <div class="login-form">
+            <h2>HỆ THỐNG QUẢN LÍ HỌC SINH</h2>
+            <h3>Đăng nhập</h3>
+            <form action="{{url_for('signinuser')}}" method="post">
+                <input type="text" id="username-signin" name="username-signin"
+                       placeholder="Tên đăng nhập" required>
+                <input type="password" id="password-signin" name="password-signin"
+                       placeholder="Mật khẩu" required>
+                <a href="#" class="forgot-password" data-bs-toggle="modal" data-bs-target="#modal-forgot-pass"> <u>Quên
+                    mật khẩu</u></a>
+
+                <button type="submit" class="login-button">Đăng Nhập</button>
+            </form>
+            <p>Chưa có tài khoản <a href="{{url_for('signup')}}">Đăng kí</a></p>
+        </div>
+    </div>
+</div>
+{% endif %}
+<div class="modal" id="modal-forgot-pass">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="container modal-content">
+            <div class="modal-header">
+                <img src="{{url_for('static', filename='images/logo.jpg')}}"
+                     alt="logo THPT NguyenDieu">
+                <h3>QUÊN MẬT KHẨU</h3>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <form action="{{url_for('sendpassforgotpassword')}}" method="POST">
+                    <div>
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="email-confirm" name="email-forgot-pass"
+                               style="margin-top: 20px"
+                               placeholder="Email" required>
+                        <br>Chúng tôi chỉ dùng email để bảo mật tài khoản và người khác sẽ không nhìn
+                        thấy email này.</br>
+                    </div>
+
+                    <button type="submit" class="login-button">
+                        Tiếp tục
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

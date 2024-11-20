@@ -1,0 +1,176 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Cập nhật thông tin{% endblock %}
+
+{% block css %}
+<head>
+    <link rel="stylesheet" href="{{url_for('static', filename= 'css/w3.css')}}">
+</head>
+<style>
+    .w3-container p {
+        margin-top: 10px
+    }
+
+    .w3-container p input {
+        width: 83%;
+        height: 35px;
+        background-size: 16px 12px;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+    }
+
+    .w3-infor p {
+        margin-top: 30px;
+    }
+
+    .form-select-permission {
+        width: 83%;
+        padding: .375rem 2.25rem .375rem .75rem;
+        -moz-padding-start: calc(0.75rem - 3px);
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right .75rem center;
+        background-size: 16px 12px;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+</style>
+{% endblock %}
+
+{% block role %}
+    {% for role in roles %}
+        {% for key in role.keys() %}
+        <li class="nav-item">
+            <a href="{{ url_for(role[key]) }}" class="nav-link active text-dark">{{ key }}</a>
+        </li>
+        {% endfor %}
+    {% endfor %}
+{% endblock %}
+
+{% block content %}
+
+
+{% if error_mess %}
+<div class="container col-5 mt-3">
+    <div class="alert alert-danger alert-dismissible">
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <strong>{{error_mess}}</strong>
+    </div>
+</div>
+{% endif %}
+
+
+<form action="{{ url_for('UpdateInforUser', TenDangNhap=current_user.TenDangNhap) }}"  method="post">
+    <div class="w3-content w3-margin-top" style="max-width:1400px;">
+        <div class="w3-row-padding">
+            <div class="w3-third">
+                <div class="w3-white w3-text-grey w3-card-4" style="border-radius: 10px; height: 618px;">
+                    <div class="w3-display-container">
+                        <img src="{{url_for('static', filename='images/avatar_hat.jpg')}}"
+                             style="width:100%; border-radius: 10px;" alt="Avatar">
+                    </div>
+                    <div class="w3-container w3-infor">
+                        <p>
+                            <i class="fa fa-briefcase fa-fw w3-margin-right w3-large w3-text-teal"></i>
+                            <select class="form-select-permission" name="sellist1">
+                                <option selected>Giảng Viên</option>
+                                <option>Admin</option>
+                                <option>Nhân viên bộ phận khác</option>
+                            </select>
+                        </p>
+                        <p>
+                            <i class="fa fa-home fa-fw w3-margin-right w3-large w3-text-teal"></i>
+                            <input type="text" name="diachi" placeholder="  Địa chỉ..">
+                        </p>
+                        <p>
+                            <i class="fa fa-envelope fa-fw w3-margin-right w3-large w3-text-teal"></i>
+                            <input type="Email" name="email" placeholder="  Email..">
+                        </p>
+
+                        <p>
+                            <i class="fa fa-phone fa-fw w3-margin-right w3-large w3-text-teal"></i>
+                            <input type="text" name="sdt" placeholder="  Số điện thoại..">
+
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="w3-twothird">
+
+                <div class="w3-container w3-card w3-white w3-margin-bottom" style="border-radius: 10px;">
+                    <h2 class="w3-text-grey w3-padding-16">
+                        <i class="fa-solid fa-user"></i><span>  Thông tin cá nhân</span></h2>
+                    <div class="container">
+                        <div class="w3-container">
+                            <h6 class="w3-text-teal">
+                                <i class="fa fa-calendar fa-fw w3-margin-right"></i>Frist name
+                            </h6>
+                            <p>
+                                <input type="text" name="fristname" placeholder="  Frist Name ...">
+                            </p>
+                        </div>
+                        <div class="w3-container">
+                            <h6 class="w3-text-teal"><i class="fa fa-calendar fa-fw w3-margin-right"></i>Last name
+                            </h6>
+                            <p>
+                                <input type="text" name="lastname" placeholder="  Last Name ...">
+                            </p>
+                        </div>
+                        <div class="w3-container">
+                            <h6 class="w3-text-teal">
+                                <i class="fa fa-calendar fa-fw w3-margin-right"></i>Ngày Sinh
+                            </h6>
+                            <p>
+                                <input type="date" name="ngaysinh">
+                            </p>
+                        </div>
+                        <div class="w3-container" style="margin-bottom: 15px;">
+                            <h6 class="w3-text-teal"><i class="fa fa-calendar fa-fw w3-margin-right"></i>Giới Tính
+                            </h6>
+                            <p>
+                                <select class="form-select-permission" name="sellist1">
+                                    <option selected>Nam</option>
+                                    <option>Nữ</option>
+                                    <option>Khác</option>
+                                </select>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w3-container w3-card w3-white" style="border-radius: 10px; margin-bottom: 16px;">
+                    <h2 class="w3-text-grey w3-padding-16"><i
+                            class="fa fa-certificate fa-fw w3-margin-right w3-xxlarge w3-text-teal"></i>YÊU CẦU QUYỀN
+                    </h2>
+                    <div class="w3-container">
+                        <p>
+                        <ul>
+                            {% for i in Permission %}
+                            <li style="list-style-type: none">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="checkbox_permission" value={{i.PermissionID}}>
+                                    <p>{{i.Value}}</p>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        <button type="submit" class="btn btn-success">Lưu</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

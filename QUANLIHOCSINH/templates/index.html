@@ -1,0 +1,51 @@
+{% extends "layout/base.html" %}
+{% block title %}Trang chu{% endblock %}
+{% block css %}
+
+{% endblock %}
+
+
+
+{% block content %}
+
+    <main>
+        <div class="features">
+            <div class="highlight">
+                <h2>TRƯỜNG THPT NGUYỄN DIÊU</h2>
+            </div>
+            <h4>Hệ thống quản lí điểm học sinh</h4>
+        </div>
+    </main>
+
+ <!-- danh sách tiện ích -->
+  <div class="container-dsti" id="dsti">
+    <h2 class="dsti"><br><br>HÌNH ẢNH NỔI BẬT</br></br></h2>
+    <div class="container-ti">
+      <div class="wrapper">
+        <i id="left" class="fa-solid fa-arrow-left"></i>
+        <ul class="slide-card">
+          <li class="card">
+            <div class="img">
+              <img src="{{url_for('static', filename='images/hinh4.jpg')}}" alt="" draggable="false" />
+            </div>
+          <li class="card">
+            <div class="img">
+              <img src="{{url_for('static', filename='images/hinh5.jpg')}}" alt="" draggable="false" />
+            </div>
+
+          </li>
+          <li class="card">
+            <div class="img">
+              <img src="{{url_for('static', filename='images/hinh6.jpg')}}" alt="" draggable="false" />
+            </div>
+
+          </li>
+         </ul>
+        <i id="right" class="fa-solid fa-arrow-right"></i>
+      </div>
+    </div>
+  </div>
+
+<script src="{{url_for('static', filename='js/slidecard.js')}}"></script>
+{% endblock %}
+

@@ -1,0 +1,221 @@
+{% extends "layout/base.html" %}
+
+{% block css %}
+<head>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+</head>
+<style>
+
+    .modal-content {
+        width: 40%
+    }
+
+    .w3-container p {
+        margin-top: 10px
+    }
+
+    .w3-container p input {
+        width: 83%;
+        height: 35px;
+        background-size: 16px 12px;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+    }
+
+    .w3-infor p {
+        margin-top: 30px;
+    }
+
+    .form-select-permission {
+        width: 83%;
+        padding: .375rem 2.25rem .375rem .75rem;
+        -moz-padding-start: calc(0.75rem - 3px);
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right .75rem center;
+        background-size: 16px 12px;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    .w3-container-infor-signup {
+        display: flex;
+    }
+
+
+</style>
+{% endblock %}
+
+{% block content %}
+    {% if error_mess %}
+    <div class="container col-5 mt-3">
+        <div class="alert alert-danger alert-dismissible">
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <strong>{{error_mess}}</strong>
+        </div>
+    </div>
+    {% endif %}
+<div class="form-login-container">
+    {% if flag=="confirm" %}
+    <form action="{{url_for('signupuser')}}" method="post">
+        <div class="w3-container-infor-signup">
+            <div class="w3-content w3-margin-top" style="flex: 5; ">
+                <div class="w3-row-padding">
+                    <div class="w3-third">
+                        <div class="w3-white w3-text-grey w3-card-4" style="border-radius: 10px;">
+                            <div class="w3-display-container">
+                                <img src="{{url_for('static', filename='images/avatar_hat.jpg')}}"
+                                     style="width:100%; border-radius: 10px;" alt="Avatar">
+                            </div>
+                            <div class="w3-container w3-infor">
+                                <p>
+                                    <i class="fa fa-briefcase fa-fw w3-margin-right w3-large w3-text-teal"></i>
+                                    <select class="form-select-permission" name="permission" id="option_giangvien">
+                                        <option selected >Admin</option>
+                                        <option>Giảng viên</option>
+                                        <option>Nhân viên bộ phận khác</option>
+                                    </select>
+                                </p>
+                                <p id = "permisson_giangvien" style="display: none">
+                                    <i class="fa fa-briefcase fa-fw w3-margin-right w3-large w3-text-teal"></i>
+                                    <select class="form-select-permission" name="monhoc" style="margin-left: 5px;" >
+                                        {% for i in monhoc %}
+                                            <option>{{i.TenMonHoc}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </p>
+
+                                <p>
+                                    <i class="fa fa-home fa-fw w3-margin-right w3-large w3-text-teal"></i>
+                                    <input type="text" name="diachi" placeholder="  Địa chỉ..">
+                                </p>
+                                <p>
+                                    <i class="fa fa-envelope fa-fw w3-margin-right w3-large w3-text-teal"></i>
+                                    <input type="Email" name="email"
+                                           value="{{pass_confirm_email}}"
+                                            readonly
+                                    >
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w3-twothird">
+                        <div class="w3-container w3-card w3-white w3-margin-bottom" style="border-radius: 10px;">
+                            <h2 class="w3-text-grey w3-padding-16">
+                                <i class="fa-solid fa-user"></i><span>  Thông tin cá nhân</span></h2>
+                            <div class="container">
+                                <div class="w3-container">
+                                    <p>
+                                        <i class="fa-solid fa-person"></i>
+                                        <input type="text" name="fristname" placeholder="  Frist Name ...">
+                                    </p>
+                                </div>
+                                <div class="w3-container">
+                                    <p>
+                                        <i class="fa-solid fa-person"></i>
+                                        <input type="text" name="lastname" placeholder="  Last Name ...">
+                                    </p>
+                                </div>
+                                <div class="w3-container">
+                                    <p>
+                                        <i class="fa-solid fa-cake-candles"></i>
+                                        <input type="date" name="ngaysinh">
+                                    </p>
+                                </div>
+                                <div class="w3-container">
+                                    <p>
+                                        <i class="fa-solid fa-person"></i>
+                                        <select class="form-select-permission" name="gioitinh">
+                                            <option selected>Nam</option>
+                                            <option>Nữ</option>
+                                            <option>Khác</option>
+                                        </select>
+                                    </p>
+                                </div>
+                                <div class="w3-container">
+                                    <p>
+                                        <i class="fa-solid fa-mobile-screen-button"></i>
+                                        <input type="text" name="sdt" placeholder="  Số điện thoại.."
+                                               style="margin-bottom: 20px;">
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="login-form">
+                <h3>Đăng kí</h3>
+                <input type="text" name="username-signup"
+                       placeholder="Tên Đăng Nhập">
+                <input type="password" name="password-signup"
+                       placeholder="Mật khẩu">
+                <input type="password" name="password-repeat"
+                       placeholder="Xác nhận mật khẩu">
+                <button type="submit" class="login-button">Đăng kí</button>
+                <p>Đã có tài khoản <a href="{{url_for('signin')}}">Đăng nhập</a></p>
+            </div>
+        </div>
+    </form>
+    {% elif flag == "need_confirm" %}
+    <div class="form-login-container">
+        <div class="container modal-content" style="width: 614px; height: 250px;">
+            <div class="modal-header">
+                <img src="{{url_for('static', filename='images/logo.jpg')}}"
+                     alt="logo THPT NguyenDieu">
+                <h3>HỆ THỐNG QUẢN LÍ HỌC SINH</h3>
+            </div>
+            <div class="modal-body">
+                <form action='/confirmpassemail' method="POST">
+                    <div>
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" name="pass-confirm-email" placeholder="Mã xác nhận"
+                               style="margin-top: 20px" required>
+                        <br>Nhập mã được gửi đến email.</br>
+                    </div>
+
+                    <button type="submit" class="login-button">
+                        Xác nhận
+                    </button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="container modal-content">
+        <div class="modal-header">
+            <img src="{{url_for('static', filename='images/logo.jpg')}}"
+                 alt="logo THPT NguyenDieu">
+            <h3>HỆ THỐNG QUẢN LÍ HỌC SINH</h3>
+        </div>
+        <div class="modal-body">
+            <form action='/send_email' method="POST">
+                <div>
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="email-confirm" name="email-confirm" style="margin-top: 20px"
+                           placeholder="Email" required>
+                    <br >Chúng tôi chỉ dùng email để bảo mật tài khoản và người khác sẽ không nhìn thấy email này.</br>
+                </div>
+
+                <button type="submit" class="login-button">
+                    Tiếp tục
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {% endif %}
+</div>
+<script src="{{url_for('static', filename='js/permission_giangvien.js')}}"></script>
+{% endblock %}
+

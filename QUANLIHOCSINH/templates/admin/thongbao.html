@@ -1,0 +1,40 @@
+{% extends 'admin/model/list.html' %}
+
+
+{% block body %}
+    {% if error_mess %}
+        <div class="container col-5 mt-3">
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <strong>{{error_mess}}</strong>
+            </div>
+        </div>
+    {% endif %}
+
+
+    <div>
+        {% if session.get('PermissionUser') %}
+             <h1>YÊU CẦU CỦA NGƯỜI DÙNG</h1>
+
+            {% for i in session['PermissionUser'] %}
+
+                {% for key in i.keys() %}
+                    <form action="{{url_for('approvepermission')}}"  method="post">
+                            <div>
+                                <h4>Tên người dùng: <input readonly style = "display: inline; border: none" name = "userid" value = {{i[key]}}> </h4>
+                                <h4>Yêu cầu: <input readonly style = "display: inline; border: none" name = "permissionid" value="{{key}}"> </h4>
+                            </div>
+                            <div>
+                                <button type = "submit" class = "btn btn-danger" >Duyệt</button>
+                            </div>
+                    </form>
+                {% endfor %}
+
+            {% endfor %}
+
+        {% endif %}
+    </div>
+
+    {{ super() }}
+{% endblock %}
+
