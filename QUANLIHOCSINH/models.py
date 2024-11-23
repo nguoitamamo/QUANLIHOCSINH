@@ -27,7 +27,7 @@ class UserInfor(db.Model):
     UserID = Column(String(20),  ForeignKey('account.id'), primary_key=True)
     Ho = Column(String(20) , nullable=False)
     Ten = Column(String(50), nullable=False)
-    Image = Column(String(100), nullable=True)
+    Image = Column(String(100), default = 'https://res.cloudinary.com/ddkpaw2gy/image/upload/v1732349173/avatarhocsinh_udeelp.png')
     NgaySinh = Column(Date, nullable=False)
     GioiTinh = Column(String(20), nullable=False)
     DiaChi = Column(String(100), nullable=False)

@@ -20,14 +20,14 @@
 
 
 {% block content %}
-{% if error_mess %}
-<div class="container col-5 mt-3">
-    <div class="alert alert-danger alert-dismissible">
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        <strong>{{error_mess}}</strong>
+    {% if error_mess %}
+    <div class="container col-5 mt-3">
+        <div class="alert alert-danger alert-dismissible">
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <strong>{{error_mess}}</strong>
+        </div>
     </div>
-</div>
-{% endif %}
+    {% endif %}
 {% if state == "sent" %}
 <div class="form-login-container">
     <div class="container modal-content" style="width: 614px; height: 250px;">
@@ -85,9 +85,9 @@
             <h2>HỆ THỐNG QUẢN LÍ HỌC SINH</h2>
             <h3>Đăng nhập</h3>
             <form action="{{url_for('signinuser')}}" method="post">
-                <input type="text" id="username-signin" name="username-signin"
+                <input type="text" name="txt_username_signin"
                        placeholder="Tên đăng nhập" required>
-                <input type="password" id="password-signin" name="password-signin"
+                <input type="password"  name="txt_password_signin"
                        placeholder="Mật khẩu" required>
                 <a href="#" class="forgot-password" data-bs-toggle="modal" data-bs-target="#modal-forgot-pass"> <u>Quên
                     mật khẩu</u></a>

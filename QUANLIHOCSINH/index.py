@@ -1,12 +1,7 @@
-import os
-
-from werkzeug.utils import secure_filename
-
 from QUANLIHOCSINH import app, login
-from flask import render_template, request, url_for, redirect, session
+from flask import render_template, request, url_for, redirect, session, jsonify
 from flask_login import login_user, logout_user, current_user
 import utils, dao
-
 
 
 @app.route('/')
@@ -21,15 +16,15 @@ def signin():
 
 @app.route('/signup')
 def signup():
-    return render_template('signup.html')
+    return render_template('signup.html', flag="confirm", Permission=dao.Load_PermissionALL())
 
 
 @app.route("/signin", methods=["POST", "GET"])
 def signinuser():
     error_mess = ""
     if request.method == "POST":
-        username = request.form["username-signin"]
-        password = request.form["password-signin"]
+        username = request.form["txt_username_signin"]
+        password = request.form["txt_password_signin"]
 
         user = dao.Check_login(username, password)
 
@@ -48,33 +43,55 @@ def signinuser():
 def signupuser():
     error_mess = ""
     if request.method.__eq__("POST"):
-        username = request.form["username-signup"]
-        password = request.form["password-signup"]
-        password_repeat = request.form["password-repeat"]
-        permission = request.form["permission"]
-        monhoc = request.form.get("monhoc") if "monhoc" in request.form else None
-        diachi = request.form["diachi"]
-        email = request.form["email"]
-        fristname = request.form["fristname"]
-        lastname = request.form["lastname"]
-        ngaysinh = request.form["ngaysinh"]
-        sex = request.form['gioitinh']
-        sdt = request.form["sdt"]
-
+        username = request.form.get("username")
+        password = request.form.get("password")
+        password_repeat = request.form.get("passwordrepeat")
         try:
-            if password.__eq__(password_repeat):
-
-                dao.Add_User(username=username, passw=password, ho=lastname, ten=fristname,
-                             ngaysinh=ngaysinh, gioitinh=sex, diachi=diachi, email=email, image=None,
-                             permission=permission, TenMonHoc=monhoc, sdt=sdt)
-                return redirect(url_for("capnhatthongtin"))
+            if dao.Check_Username_Exits(username):
+                error_mess = "Tên đăng nhập đã tồn tại!!"
+                return render_template('signup.html', error_mess=error_mess, flag="confirm")
             else:
+                if password.__eq__(password_repeat):
 
-                error_mess = "Mật khẩu và xác nhận mật khẩu không giống!!"
-                return render_template('signup.html', error_mess=error_mess)
+                    avatar = request.files.get("avatar")
+
+                    sdt = list(request.form.getlist('sdt'))
+
+                    permission = request.form.getlist('checkbox_permission')
+                    print(permission)
+
+                    PermissionUser = []
+                    for i in permission:
+                        PermissionUser.append({dao.GetPerMissionByID(i): username})
+
+                    if permission:
+                        session["PermissionUser"] = PermissionUser
+
+                    activeaccount = request.form.get("activeaccount")
+
+                    if "activeaccount" not in session:
+                        session["activeaccount"] = []
+
+                    if activeaccount == "on" and username not in session["activeaccount"]:
+                        session["activeaccount"].append(username)
+                        session.modified = True
+
+                    data = request.form.copy()
+
+                    del data['passwordrepeat']
+                    del data["sdt"]
+                    del data["checkbox_permission"]
+                    del data["activeaccount"]
+
+                    dao.Add_User(avatar=avatar, sdt=sdt, **data)
+
+                    return redirect(url_for("capnhatthongtin"))
+                else:
+
+                    error_mess = "Mật khẩu và xác nhận mật khẩu không giống!!"
+                    return render_template('signup.html', error_mess=error_mess)
 
         except Exception as ex:
-
             error_mess = str(ex)
             return render_template('signup.html', error_mess=error_mess)
 
@@ -88,7 +105,7 @@ def send_email():
             email_rec = request.form.get("email-confirm")
             Pass_Confirm_Email = utils.rand_Pass_Confirm_Email()
             dao.AddToken(Pass_Confirm_Email, email_rec)
-            utils.Send_Email(Pass_Confirm_Email, email_rec)
+            utils.Send_Email(subject="Mã xác nhận", content=Pass_Confirm_Email, email_rec=email_rec)
             return render_template('signup.html', flag="need_confirm")
         except Exception as ex:
             return render_template('signup.html', error_mess=str(ex))
@@ -103,7 +120,8 @@ def confirmpassemail():
         try:
             if pass_confirm_email.__eq__(dao.GetToken(pass_confirm_email)):
                 return render_template('signup.html', flag="confirm", monhoc=dao.Load_MonHoc(),
-                                       pass_confirm_email=dao.LoadEmailConfirm(pass_confirm_email))
+                                       pass_confirm_email=dao.LoadEmailConfirm(pass_confirm_email),
+                                       Permission=dao.Load_PermissionALL())
             else:
                 error_mess = "Mã xác nhận không hợp lệ!!"
                 return render_template("signup.html", flag="need_confirm", error_mess=error_mess)
@@ -118,9 +136,10 @@ def commom_response():
     if current_user.is_authenticated:
         return {
             'roles': dao.Load_Permission_User(current_user.id),
+            'Permission': dao.Load_Permission()
 
         }
-    return {}
+    return {'Permission': dao.Load_Permission()}
 
 
 # @app.route('/user/<id>')
@@ -171,20 +190,20 @@ def dieuchinhdanhsachlop():
     return render_template("dieuchinhdanhsachlop.html", lophocsinh=lophocsinh)
 
 
-@app.route('/user/tiepnhanhocsinh/<TenDangNhap>', methods=["POST", "GET"])
-def SaveInforHocSinh(TenDangNhap):
+@app.route('/user/tiepnhanhocsinh', methods=["POST", "GET"])
+def SaveInforHocSinh():
     if request.method == "POST":
-        diachi = request.form['diachi']
-        email = request.form['email']
-        sdt = request.form['sdt']
-        ho = request.form['lastname']
-        ten = request.form['firstname']
-        birthday = request.form['ngaysinh']
-        sex = request.form['gioitinh']
-        diemTbDauVao = request.form['diemTbDauVao']
         try:
-            dao.add_HocSinh(float(diemTbDauVao), ho, ten, ngaysinh=birthday, gioitinh=sex, diachi=diachi, email=email,
-                            image=None)
+            diemTbDauVao = float(request.form['diemTbDauVao'])
+            avatar = request.files.get('avatar')
+            sdt = list(request.form.getlist('sdt'))
+
+            data = request.form.copy()
+
+            del data['diemTbDauVao']
+            del data['sdt']
+
+            dao.add_HocSinh(diemTbDauVao=diemTbDauVao, sdt=sdt, avatar=avatar, **data)
             return render_template('tiepnhanhocsinh.html', mess="Lưu thông tin thành công!")
         except Exception as ex:
             return render_template('tiepnhanhocsinh.html', mess=str(ex))
@@ -198,7 +217,9 @@ def UpdateInforUser(TenDangNhap):
         permission = request.form.getlist('checkbox_permission')
         PermissionUser = []
         for i in permission:
-            PermissionUser.append({i: current_user.id})
+            PermissionUser.append({dao.GetPerMissionByID(i): current_user.TenDangNhap})
+
+        print(PermissionUser)
 
         if permission:
             print(permission)
@@ -211,27 +232,44 @@ def UpdateInforUser(TenDangNhap):
     return render_template('capnhatthongtin.html', TenDangNhap=TenDangNhap)
 
 
-@app.route('/approvepermission', methods=["POST", "GET"])
+@app.route('/approvepermission', methods=["POST"])
 def approvepermission():
-    if request.method == "POST":
-        userid = request.form["userid"]
-        permissionid = request.form["permissionid"]
+    permissionuser = request.get_json()
+    username = permissionuser.get('username')
+    permissionvalue = permissionuser.get('permissionvalue')
+    print(permissionvalue, username)
 
-        dao.AddPermissionUser(permissionid=permissionid, userid=userid)
+    permissionid = dao.GetPerMissionByValue(permissionvalue)
+    userid = dao.GetUserNameByID(username)
+    print(permissionid, userid)
 
-        for index, i in enumerate(session["PermissionUser"]):
-            for key in i.keys():
-                if key == permissionid and i[key] == userid:
-                    session["PermissionUser"].pop(index)
-                    break
+    success = dao.AddPermissionUser(permissionid=permissionid, userid=userid)
 
+    for index, i in enumerate(session.get("PermissionUser", [])):
+        for key in i.keys():
+            print(key, i[key])
+            if key == permissionvalue and i[key] == username:
+                session["PermissionUser"].pop(index)
+                break
+
+    session.modified = True
+
+    return jsonify({"success": success})
+
+
+@app.route('/acctiveaccount', methods=["POST"])
+def acctiveaccount():
+    activeuser = request.get_json()
+    username = activeuser.get('username')
+    print("Kích hoạt tài khoản:", username)
+
+    dao.ActiveAccount(dao.GetUserNameByID(username))
+
+    if username in session["activeaccount"]:
+        session["activeaccount"].remove(username)
         session.modified = True
 
-        error_mess = "Thêm thành công!"
-
-        return {}
-
-    return render_template('index.html')
+    return jsonify({"success": True})
 
 
 @app.route('/dieuchinhdanhsachlop/<TenDangNhap>/addhocsinh', methods=["POST", "GET"])
@@ -259,8 +297,6 @@ def sendpassforgotpassword():
                 Pass_Confirm_Email = utils.rand_Pass_Confirm_Email()
 
                 dao.AddToken(Pass_Confirm_Email, email)
-
-                utils.Send_Email(Pass_Confirm_Email, email)
 
                 return render_template('signin.html', state="sent", email=email)
 
@@ -324,19 +360,14 @@ def uploaddanhsachhocsinh():
 
         file = request.files.get('file')
 
-
-        if not file or file.filename == '':
+        if not file:
             return render_template('tiepnhanhocsinh.html', mess="Bạn chưa chọn file!")
 
         if file.filename.endswith('.xlsx') or file.filename.endswith('.xls'):
             try:
+                dic = utils.LoadFile(file)
 
-                page = request.args.get('page', 1)
-                dic = utils.LoadFile(file, page = int(page))
-
-
-                # Render giao diện danh sách học sinh
-                return render_template('tiepnhanhocsinh.html', data=dic, file = file)
+                return render_template('tiepnhanhocsinh.html', data=dic)
             except Exception as e:
                 return render_template('tiepnhanhocsinh.html', mess=f"Lỗi khi xử lý file: {e}")
         else:
@@ -347,9 +378,7 @@ def uploaddanhsachhocsinh():
 
 @app.route('/user/tiepnhanhocsinh')
 def dividelistdshocsinh():
-
     page = request.args.get('page', 1)
-
 
     # if not filepath:
     #     return "Not file"
@@ -357,9 +386,7 @@ def dividelistdshocsinh():
     #
     # dic = utils.LoadFile(filepath, int(page))
 
-
-    return render_template('tiepnhanhocsinh.html' )
-
+    return render_template('tiepnhanhocsinh.html')
 
 
 @login.user_loader

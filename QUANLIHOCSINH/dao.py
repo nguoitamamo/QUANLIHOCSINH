@@ -5,6 +5,8 @@ from QUANLIHOCSINH import app, db
 import models
 import unidecode
 import hashlib
+import cloudinary
+from cloudinary import uploader
 
 import random
 
@@ -83,30 +85,51 @@ def Get_MonHoc_By_TenMonHoc(TenMonHoc):
     monhoc = models.MonHoc.query.filter(models.MonHoc.TenMonHoc.__eq__(TenMonHoc)).first()
     return monhoc.MaMonHoc if monhoc else None
 
+def Check_Username_Exits(username):
+    return models.Account.query.filter(models.Account.TenDangNhap.__eq__(username)).first()
 
-def Add_User(username, passw, ho, ten, ngaysinh, gioitinh, diachi, email, image, permission, TenMonHoc, sdt, *kwargs):
-    passwrd = str(hashlib.md5(passw.strip().encode('utf-8')).hexdigest())
-    IdUser = "U" + str(Get_Cnt_Accout_Current() + 1)
-    user = models.Account(id=IdUser,
+
+def Add_User(username, password, lastname, fristname, ngaysinh, gioitinh, diachi, email, permission, sdt: list[str] , monhoc = None, avatar =None):
+    passwrd = str(hashlib.md5(password.strip().encode('utf-8')).hexdigest())
+
+    idac = "HS" + str(Get_Cnt_Accout_Current()) + "_" + str(random.randint(100, 999))
+
+    user = models.Account(id=idac,
                           TenDangNhap=username.strip(),
                           MatKhau=passwrd)
     db.session.add(user)
-    inforuser = models.UserInfor(UserID=IdUser, Ho=ho.strip(), Ten=ten.strip(), NgaySinh=ngaysinh, GioiTinh=gioitinh,
-                                 DiaChi=diachi.strip(), Email=email.strip(), Image=image)
+
+    inforuser = models.UserInfor(UserID=idac, Ho=lastname.strip(), Ten=fristname.strip(), NgaySinh=ngaysinh, GioiTinh=gioitinh,
+                                 DiaChi=diachi.strip(), Email=email.strip())
+
+    if avatar:
+        res = cloudinary.uploader.upload(avatar)
+        inforuser.Image = res.get('secure_url')
+        print(res.get('secure_url'))
+
     db.session.add(inforuser)
-    if permission == "Giảng viên":
-        giangvien = models.GiangVien(MaGiangVien=IdUser, MaMonHoc=Get_MonHoc_By_TenMonHoc(TenMonHoc))
+
+    if permission == "Giảng viên" and monhoc:
+        giangvien = models.GiangVien(MaGiangVien=idac, MaMonHoc=Get_MonHoc_By_TenMonHoc(monhoc))
         db.session.add(giangvien)
-    elif permission == "Admin":
-        admin = models.Admin(AdminID=IdUser)
-        db.session.add(admin)
     else:
-        nhanvien = models.NhanVienBoPhanKhac(MaNV=IdUser)
+        nhanvien = models.NhanVienBoPhanKhac(MaNV=idac)
         db.session.add(nhanvien)
 
-    phone = models.Phone(Number=sdt, UserID=IdUser)
-    db.session.add(phone)
+    if sdt:
+        for i in sdt:
+            phone = models.Phone(Number=str(i), UserID=idac)
+            db.session.add(phone)
+
     db.session.commit()
+
+
+
+def ActiveAccount(id):
+    acc = models.Account.query.get(id)
+    if acc:
+        acc.Active = True
+        db.session.commit()
 
 
 def Load_PermissionALL():
@@ -132,16 +155,33 @@ def LoadEmailConfirm(value):
     return models.Token.query.filter(models.Token.Value.__eq__(value)).first().Email
 
 
-def add_HocSinh(diemdauvao, ho, ten, ngaysinh, gioitinh, diachi, email, image, *kwargs):
-    idac = "U" + str(Get_Cnt_Accout_Current() + 1)
-    hocsinh = models.HocSinh(MaHocSinh=idac, DiemTbDauVao=diemdauvao)
+def add_HocSinh(diemTbDauVao, firstname, lastname, ngaysinh, gioitinh, diachi, email,sdt =None,  avatar =None):
+
+    idac = "HS" + str(Get_Cnt_Accout_Current()) + "_"  + str(random.randint(100,999))
+
+    hocsinh = models.HocSinh(MaHocSinh=idac, DiemTbDauVao=diemTbDauVao)
     db.session.add(hocsinh)
-    password_hash = hashlib.md5("111".encode('utf-8')).hexdigest()
-    accoutHocSinh = models.Account(id=idac, TenDangNhap="HocSinh" + str(idac), MatKhau=password_hash, Active=False)
+
+    password_hash = hashlib.md5(idac.encode('utf-8')).hexdigest()
+
+    accoutHocSinh = models.Account(id=idac, TenDangNhap="HocSinh" + str(idac), MatKhau=password_hash)
     db.session.add(accoutHocSinh)
-    inforHocSinh = models.UserInfor(UserID=idac, Ho=ho, Ten=ten, NgaySinh=ngaysinh, GioiTinh=gioitinh, DiaChi=diachi,
-                                    Email=email, Image=image)
+
+    inforHocSinh = models.UserInfor(UserID=idac, Ho=firstname, Ten=lastname, NgaySinh=ngaysinh, GioiTinh=gioitinh, DiaChi=diachi,
+                                    Email=email)
+
+    if avatar:
+        res = cloudinary.uploader.upload(avatar)
+        inforHocSinh.Image = res.get('secure_url')
+
     db.session.add(inforHocSinh)
+
+    if sdt:
+        for i in sdt:
+            phone = models.Phone(Number=str(i), UserID=idac)
+            db.session.add(phone)
+
+
     db.session.commit()
 
 
@@ -235,12 +275,15 @@ def Division_Class(solopcanchia):
         Insert_HS_Remain(len(remaining), int(solopcanchia), int(tb), remaining)
 
 
+def GetPerMissionByValue(value):
+    return models.Permission.query.filter(models.Permission.Value.__eq__(value)).first().PermissionID
+
 def GetPerMissionByID(id):
-    return models.Permission.query.filter_by(models.Permission.PermissionID.__eq__(id)).first()
+    return models.Permission.query.filter(models.Permission.PermissionID.__eq__(id)).first().Value
 
 
-def GetUserNameByID(id):
-    return models.UserInfor.query.filter_by(models.UserInfor.UserID.__eq__(id)).first()
+def GetUserNameByID(username):
+    return models.Account.query.filter(models.Account.TenDangNhap.__eq__(username)).first().id
 
 def GetLopByID(malop):
     inforlop = db.session.query(models.Lop.TenLop , models.Lop.SiSo).filter(models.Lop.MaLop == malop).first()
@@ -249,14 +292,16 @@ def GetLopByID(malop):
 
 
 def AddPermissionUser(permissionid, userid):
-    perrmissionuser = (models.PermissionUser.query.filter(models.PermissionUser.PermissionID.__eq__(permissionid)
-                                                         and models.PermissionUser.UserID.__eq__(userid))
+    perrmissionuser = (models.PermissionUser.query.filter(models.PermissionUser.PermissionID==permissionid,
+                                                          models.PermissionUser.UserID==userid)
                        .first())
     if not perrmissionuser:
         perrmissionuser = models.PermissionUser(PermissionID=permissionid, UserID=userid)
         db.session.add(perrmissionuser)
         db.session.commit()
+        return True
 
+    return False
 
 
 
@@ -342,4 +387,4 @@ if __name__ == '__main__':
         #         for info in hs:
         #             print(
         #                 f"Họ: {info.Ho}, Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
-        print(GetToken("1111"))
+        print(GetPerMissionByID("1"))
