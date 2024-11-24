@@ -1,6 +1,4 @@
-
-
-
+from itertools import islice
 
 from QUANLIHOCSINH import app, db
 import random
@@ -9,6 +7,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
 import pandas as pd
+from math import ceil
 
 dataframe1 = pd.read_excel(os.getcwd() + '\\templates\\layout\\infor.xlsx', dtype={"Số điện thoại": str})
 
@@ -40,12 +39,15 @@ def Send_Email(subject,content, email_rec):
 
 
 def LoadFile(file):
+
     df = pd.read_excel(file, dtype={"Số điện thoại": str})
 
+
     dic = []
-    # Chuyển dữ liệu thành danh sách dictionary
+
     for i, row in df.iterrows():
         dic.append({
+            "STT" : row["STT"],
             "Họ": row["Họ"],
             "Tên": row["Tên"],
             "Điểm": row["Điểm"],
@@ -56,20 +58,26 @@ def LoadFile(file):
             "Số điện thoại": row["Số điện thoại"]
         })
 
-    # page_size = 40
-    # start = (page - 1) * page_size
-    # end = start + page_size
-    #
-    # df_page = df.iloc[start:end]
-    #
-    # dic_page = df_page.to_dict(orient="records")
-
-    return dic
-
-def Remove_Permission_User_Exits(permissionvalue, username):
+    return  dic
 
 
-    return True
+def Pagination_Data(data, page, total_record = 10):
+
+    total_page = ceil(len(data) / total_record)
+
+    start = (page - 1) * total_record
+    end = start + total_record
+
+    df_page = list(islice(data, start, end))
+
+    return  {
+        "dic_page" : df_page,
+        "total_page" : total_page
+    }
+
+
+
+
 
 
 if __name__ == '__main__':

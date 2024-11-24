@@ -1,3 +1,5 @@
+
+
 from QUANLIHOCSINH import app, login
 from flask import render_template, request, url_for, redirect, session, jsonify
 from flask_login import login_user, logout_user, current_user
@@ -219,10 +221,9 @@ def UpdateInforUser(TenDangNhap):
         for i in permission:
             PermissionUser.append({dao.GetPerMissionByID(i): current_user.TenDangNhap})
 
-        print(PermissionUser)
+
 
         if permission:
-            print(permission)
             session["PermissionUser"] = PermissionUser
             return redirect(url_for('index'))
         else:
@@ -354,7 +355,7 @@ def updatepass(email):
             return render_template('signin.html', state="confirmed", error_mess=str(ex))
 
 
-@app.route('/user/tiepnhanhocsinh', methods=['POST', 'GET'])
+@app.route('/user/uploaddanhsachhocsinh', methods=['POST'])
 def uploaddanhsachhocsinh():
     if request.method == 'POST':
 
@@ -365,9 +366,19 @@ def uploaddanhsachhocsinh():
 
         if file.filename.endswith('.xlsx') or file.filename.endswith('.xls'):
             try:
-                dic = utils.LoadFile(file)
 
-                return render_template('tiepnhanhocsinh.html', data=dic)
+                dic = utils.LoadFile(file)
+                session["dshocsinh"]  = dic
+
+                page = request.args.get('page' ,1)
+                data_page = utils.Pagination_Data( session["dshocsinh"] , int(page) )
+
+
+                return render_template('tiepnhanhocsinh.html',
+                                       data =  data_page['dic_page'] ,
+                                       total_page = data_page['total_page']
+                                        )
+
             except Exception as e:
                 return render_template('tiepnhanhocsinh.html', mess=f"Lỗi khi xử lý file: {e}")
         else:
@@ -376,18 +387,59 @@ def uploaddanhsachhocsinh():
     return render_template('tiepnhanhocsinh.html')
 
 
-@app.route('/user/tiepnhanhocsinh')
+
+
+@app.route('/user/uploaddanhsachhocsinh')
 def dividelistdshocsinh():
+
     page = request.args.get('page', 1)
 
-    # if not filepath:
-    #     return "Not file"
-    #
-    #
-    # dic = utils.LoadFile(filepath, int(page))
+    data_page = utils.Pagination_Data(session["dshocsinh"], int(page))
 
-    return render_template('tiepnhanhocsinh.html')
+    return render_template('tiepnhanhocsinh.html',
+                           data=data_page['dic_page'],
+                           total_page=data_page['total_page'] )
 
+@app.route('/user/uploaddanhsachhocsinh/updatesdt' , methods = ["put"])
+def updatesdthocsinh():
+    data = request.get_json()
+    stt = data.get('STT')
+    sdt = data.get('sdt')
+
+    for i in session.get('dshocsinh'):
+        if i['STT']== stt:
+            i['Số điện thoại'] = sdt
+            session.modified= True
+            return jsonify({"success": True})
+
+    return jsonify({"success": True})
+
+
+@app.route('/user/uploaddanhsachhocsinh/removehocsinh/<int:stt>', methods=['delete'])
+def removedhocinfile(stt):
+
+    for index, i in enumerate(session.get('dshocsinh')):
+        if i['STT'] == stt:
+            session['dshocsinh'].pop(index)
+            session.modified = True
+            return jsonify({"success": True})
+
+    return jsonify({"success": False})
+
+
+@app.route('/user/uploaddanhsachhocsinh/savedshocsinh',  methods=["POST"])
+def saveinforDshocsinh():
+    # def add_HocSinh(diemTbDauVao, firstname, lastname, ngaysinh, gioitinh, diachi, email, sdt=None, avatar=None):
+
+    try:
+        for i in session.get('dshocsinh'):
+            dao.add_HocSinh(diemTbDauVao=round(float(i['Điểm']), 1) , firstname = i['Tên'] , lastname= i['Họ'],
+                            ngaysinh = i['Ngày sinh'], gioitinh= i['Giới tính'] , diachi = i['Địa chỉ'],
+                            email = i['Email'], sdt = i['Số điện thoại'].rsplit('/') )
+
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False})
 
 @login.user_loader
 def user_load(id):

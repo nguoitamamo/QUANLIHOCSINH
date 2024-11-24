@@ -34,7 +34,6 @@ function ActiveAccount(username) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert("ddax caof")
             window.location.reload();
         }
     })

@@ -1,4 +1,4 @@
-from flask import render_template
+
 
 from QUANLIHOCSINH import app, db
 from flask_admin import Admin
