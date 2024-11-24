@@ -1,4 +1,5 @@
-from itertools import islice
+from itertools import islice, count
+from math import ceil
 
 from sqlalchemy import func
 from QUANLIHOCSINH import app, db
@@ -353,20 +354,29 @@ def removeHocSinh(malop, mahocsinh):
 
 
 
+def Get_Cnt_Lop_New(maxsslop):
+    return  ceil(( db.session.query( models.LopHocSinh.NamTaoLop == "2022").count() ) / maxsslop )
+
+
 
 
 Ho = [ "Phan", "Ly", "Thanh", "La" , "Hoang"]
 Ten =["Trung", "Trinh", "A", "D", "E", "G", "B"]
 
 def them():
-    for i in range(900, 1350):
-        hocsinh = models.HocSinh(MaHocSinh = "U" + str(i) , DiemTbDauVao = float(random.randint(1,10)))
+    for i in range(1, 420):
+        idac = "HS" + str(Get_Cnt_Accout_Current()) + "_" + str(random.randint(100, 999))
+        hocsinh = models.HocSinh(MaHocSinh = idac , DiemTbDauVao = float(random.randint(1,10)))
         db.session.add(hocsinh)
+
         password_hash = hashlib.md5(str(i).encode('utf-8')).hexdigest()
-        accoutHocSinh = models.Account(id="U" + str(i), TenDangNhap="HocSinh" + str(i), MatKhau=password_hash, Active=False)
+
+        accoutHocSinh = models.Account(id= idac , TenDangNhap="HocSinhmoi" + str(i), MatKhau=password_hash)
         db.session.add(accoutHocSinh)
-        inforHocSinh = models.UserInfor(UserID="U" + str(i), Ho=Ho[(i%5)], Ten=Ten[(i%7)], NgaySinh="2007-11-12", GioiTinh="Nam",DiaChi="Bình định", Email="hocsinh" + str(i) + "@gmail.com", Image=None)
+
+        inforHocSinh = models.UserInfor(UserID=idac, Ho=Ho[(i%5)], Ten=Ten[(i%7)], NgaySinh="2008-11-12", GioiTinh="Nam",DiaChi="Bình định", Email="test" + str(i) + "@gmail.com", Image=None)
         db.session.add(inforHocSinh)
+
         db.session.commit()
 
 
@@ -380,11 +390,11 @@ def them():
 
 if __name__ == '__main__':
     with app.app_context():
-        # lop_hocsinh = LoadLop()
+        # lop_hocsinh = LoadLop(11,2)
         # for ma_lop, danh_sach_hoc_sinh in lop_hocsinh.items():
         #     print(f"Lớp: {ma_lop}")
         #     for hs in danh_sach_hoc_sinh:
         #         for info in hs:
         #             print(
         #                 f"Họ: {info.Ho}, Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
-        print(GetPerMissionByID("1"))
+        print(Get_Cnt_Lop_New(40))

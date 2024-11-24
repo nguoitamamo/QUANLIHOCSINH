@@ -4,6 +4,9 @@ from QUANLIHOCSINH import app, login
 from flask import render_template, request, url_for, redirect, session, jsonify
 from flask_login import login_user, logout_user, current_user
 import utils, dao
+from math import ceil
+
+from QUANLIHOCSINH.dao import Get_Cnt_Lop_New
 
 
 @app.route('/')
@@ -60,7 +63,6 @@ def signupuser():
                     sdt = list(request.form.getlist('sdt'))
 
                     permission = request.form.getlist('checkbox_permission')
-                    print(permission)
 
                     PermissionUser = []
                     for i in permission:
@@ -156,11 +158,19 @@ def capnhatthongtin():
 
 @app.route('/user/lapdanhsachlop')
 def lapdanhsachlop():
+
+
     if dao.Cnt_Sum_HocSinh_Not_Lop() != int(0):
-        dao.Division_Class(12)
+        solop = ceil(dao.Cnt_Sum_HocSinh_Not_Lop() / 40)
+        dao.Division_Class(solop)
+
     page = request.args.get('page', 1)
-    lophocsinh = dao.LoadLop(12, page=int(page))
-    return render_template("lapdanhsachlop.html", lophocsinh=lophocsinh)
+
+    solop = int(Get_Cnt_Lop_New((40)))
+
+    lophocsinh = dao.LoadLop(solop, page=int(page))
+
+    return render_template("lapdanhsachlop.html", lophocsinh=lophocsinh , solop = solop )
 
 
 @app.route("/logout")
