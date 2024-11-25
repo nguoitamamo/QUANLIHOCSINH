@@ -241,13 +241,14 @@ def Insert_HS_Remain(sohocsinhconlai, solopcanchia, tb, remaining):
     if sohocsinhconlai <= 0 or not remaining:
         return 0
 
-    condition = int(40 - tb)
+    siso = app.config["MAX_SS_LOP"]
+    condition = int(siso - tb)
     remaining.reverse()
 
     if len(remaining) >= condition:
         for i in range(1, condition + 1):
             lophocsinh = models.LopHocSinh(MaLop="L10A" + str(solopcanchia), MaHocSinh=remaining[i - 1].MaHocSinh, NamTaoLop = "2024")
-            UpdateSiSo(MaLop="L10A" + str(solopcanchia), SiSo=40)
+            UpdateSiSo(MaLop="L10A" + str(solopcanchia), SiSo=siso)
             db.session.add(lophocsinh)
     else:
         for i in range(1, len(remaining) + 1):
@@ -266,7 +267,7 @@ def Insert_HS_Remain(sohocsinhconlai, solopcanchia, tb, remaining):
 def Division_Class(solopcanchia):
     tb = Cnt_Sum_HocSinh_Not_Lop() / solopcanchia
 
-    if tb >= 40:
+    if tb >= app.config["MAX_SS_LOP"]:
         return 0
 
     for i in range(1, solopcanchia + 1):
@@ -302,12 +303,15 @@ def GetLopByID(malop):
     return inforlop
 
 
+def CheckPermissionUserExit(permissionid, userid):
+    return models.PermissionUser.query.filter(models.PermissionUser.PermissionID == permissionid,
+                                                          models.PermissionUser.UserID == userid).first()
+
+
 
 def AddPermissionUser(permissionid, userid):
-    perrmissionuser = (models.PermissionUser.query.filter(models.PermissionUser.PermissionID==permissionid,
-                                                          models.PermissionUser.UserID==userid)
-                       .first())
-    if not perrmissionuser:
+
+    if CheckPermissionUserExit(permissionid, userid):
         perrmissionuser = models.PermissionUser(PermissionID=permissionid, UserID=userid)
         db.session.add(perrmissionuser)
         db.session.commit()
@@ -366,7 +370,14 @@ def removeHocSinh(malop, mahocsinh):
 
 
 
+def CheckHocSinhExitsLop(mahocsinh, malop):
+    return models.LopHocSinh.query.filter(models.LopHocSinh.MaHocSinh == mahocsinh,
+                                                          models.LopHocSinh.MaLop == malop).first()
+
+
+
 def addHocSinhToLop(mahocsinh, malop):
+
     currentyear = str(datetime.now().year)
     lophocsinh = models.LopHocSinh ( MaHocSinh = mahocsinh, MaLop = malop, NamTaoLop = currentyear )
     db.session.add(lophocsinh)

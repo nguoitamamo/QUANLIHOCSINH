@@ -206,10 +206,10 @@
         <div class="container mt-3">
             <ul class="pagination">
                 <li class="page-item"><a class="page-link" href="#">Trang</a></li>
-                {% for page in range(1, total_page + 1) %}
+                {% for i in range(1, total_page + 1) %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ url_for('dividelistdshocsinh', page=page) }}">
-                            {{ page }}
+                        <a class="page-link" href="{{ url_for('dividelistdshocsinh', page=i) }}">
+                            {{ i }}
                         </a>
                     </li>
                 {% endfor %}

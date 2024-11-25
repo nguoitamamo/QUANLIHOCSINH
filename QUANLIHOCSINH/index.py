@@ -161,16 +161,16 @@ def capnhatthongtin():
 def lapdanhsachlop():
 
     solop = int(dao.SoLop((app.config["MAX_SS_LOP"])))
-    print(solop)
+
 
 
     if dao.Cnt_Sum_HocSinh_Not_Lop() > int(10):
         dao.Division_Class(solop)
 
-    page = request.args.get('page', 1)
+    page = int(request.args.get('page', 1))
 
 
-    lophocsinh = dao.LoadLop(solop, page=int(page))
+    lophocsinh = dao.LoadLop(solop, page = page)
 
     return render_template("lapdanhsachlop.html", lophocsinh=lophocsinh , solop = solop )
 
@@ -207,12 +207,12 @@ def dieuchinhdanhsachlop():
 
     solop = int(dao.SoLop((app.config["MAX_SS_LOP"])))
 
-    page = request.args.get('page', 1)
-    lophocsinh = dao.LoadLop(solop, page=int(page))
+    page = int(request.args.get('page', 1))
+
+    lophocsinh = dao.LoadLop(solop, page = page)
 
     dshocsinhnotlop = dao.HocSinhNotLop()
 
-    # session["dshocsinhnotlop"] = utils.SaveIntoSession(dshocsinhnotlop)
 
     return render_template("dieuchinhdanhsachlop.html", lophocsinh=lophocsinh,
                                                                           solop = solop ,
@@ -233,26 +233,30 @@ def savehocsinhtosession(id):
 
 
 
-@app.route('/user/dieuchinhdanhsachlop/addhocsinh', methods=["POST"])
-def addhocsinhtolop():
+
+
+@app.route('/user/dieuchinhdanhsachlop/addhocsinh/ds/<page>', methods=["POST"])
+def addhocsinhtolop(page):
 
     try:
-        page = request.args.get('page', 1)
-
+        if not page.isdigit():
+            page = 1
 
         for i in session['dshocsinhnotlop']:
 
             dao.addHocSinhToLop(mahocsinh = i, malop= 'L10A' + str(page) )
 
-            session.get('dshocsinhnotlop').clear()
-            session.modified = True
+        session.get('dshocsinhnotlop').clear()
+        session.modified = True
 
-            return jsonify({"success": True})
-
+        return jsonify({"success": True})
 
     except Exception as ex:
-
         return jsonify({"success": False})
+
+
+
+
 
 
 

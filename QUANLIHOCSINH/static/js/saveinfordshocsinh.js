@@ -105,10 +105,11 @@ function CheckAddHocSinh(id, obj) {
 }
 
 
-function AddHocSinhToLop() {
-    alert("ddax vafo")
-    fetch('/user/dieuchinhdanhsachlop/addhocsinh', {
-        method: 'post',
+function AddHocSinhToLop(requesturl) {
+    var page = requesturl.charAt(requesturl.length - 1);
+
+    fetch(`/user/dieuchinhdanhsachlop/addhocsinh/ds/${page}`, {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         }
