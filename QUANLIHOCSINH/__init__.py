@@ -11,7 +11,7 @@ app.config["SECRET_KEY"] = "hnt"
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:594362@localhost/QUANLIHOCSINH"
 app.config["PAGE_SIZE"] = 1
 
-
+app.config["MAX_SS_LOP"] = 40
 
 # app.config['SESSION_COOKIE_NAME'] = 'my_session_cookie'
 app.config['SESSION_COOKIE_HTTPONLY'] = True

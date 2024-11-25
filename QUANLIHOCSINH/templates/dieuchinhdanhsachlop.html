@@ -1,59 +1,136 @@
 {% extends 'layout/base.html' %}
 
+{% block css %}
+    <style>
+        .container-dshoc-notlop {
+            height: 300px;
+            width: 70%;
+            border: 1px solid;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px auto;
+        }
+
+        .table-scroll-bar-y {
+            height: 170px;
+            overflow-y: auto;
+        }
+
+        .btn-sua {
+            background-color: #ade6ad;
+            height: 50px;
+            width: 200px;
+            border-radius: 10px;
+        }
+
+    </style>
+
+
+{% endblock %}
+
 
 {% block content %}
 
-<div class="container mt-3">
-    <ul class="pagination">
-        <li class="page-item"><a class="page-link" href="#">Lớp</a></li>
-        {% for i in range(1, 13) %}
-        <li class="page-item"><a class="page-link" href="{{url_for('dieuchinhdanhsachlop',page = i) }}">{{i}}</a></li>
-        {% endfor %}
-    </ul>
-</div>
 
-{% for ten_lop, danh_sach_hoc_sinh in lophocsinh.items() %}
-<div class="container mt-3">
-    <h2>Lớp: {{ten_lop}}</h2>
-    <p>Sĩ số: {{ danh_sach_hoc_sinh | length }}</p>
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>STT</th>
-            <th>Họ tên</th>
-            <th>Giới tính</th>
-            <th>Năm sinh</th>
-            <th>Địa chỉ</th>
-            <th></th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for hs in danh_sach_hoc_sinh %}
-        {% for info in hs %}
-        <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ info.Ho }} {{ info.Ten }}</td>
-            <td>{{ info.GioiTinh }}</td>
-            <td>{{ info.NgaySinh.strftime('%Y') }}</td>
-            <td>{{ info.DiaChi }}</td>
-            <td>
-                <button type="submit" style="background: none; border: none"><i class="fa-solid fa-plus"></i>
-                </button>
-            </td>
-            <td>
-                <button type="submit" style="background: none; border: none" id = "btn_remove_hocsinh"><i class="fa-solid fa-minus"></i></button>
-            </td>
+    {% if dshocsinhnotlop %}
+    <div class="container">
+
+        <div class="container-dshoc-notlop">
+            <h3 style="margin-top: 20px">DANH SÁCH HỌC SINH CHƯA CÓ LỚP</h3>
+            <div class="table-scroll-bar-y">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Họ tên</th>
+                        <th>Điểm</th>
+                        <th>Giới tính</th>
+                        <th>Năm sinh</th>
+                        <th>Địa chỉ</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for hs in dshocsinhnotlop %}
+                        {% for info in hs %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ info.Ho }} {{ info.Ten }}</td>
+                        <td>{{ info.DiemTbDauVao }}</td>
+                        <td>{{ info.GioiTinh }}</td>
+                        <td>{{ info.NgaySinh.strftime('%Y') }}</td>
+                        <td>{{ info.DiaChi }}</td>
+                        <td>
+                            <input type="checkbox" class="form-check-input"
+                                    onchange="CheckAddHocSinh('{{ info.UserID }}' , this)">
+
+                        </td>
+                    </tr>
+                        {% endfor %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div style="text-align: right;">
+                <button class="btn btn-sua" onclick="AddHocSinhToLop()">Thêm</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if solop %}
+    <div class="container mt-3">
+        <ul class="pagination">
+            <li class="page-item"><a class="page-link" href="#">Lớp</a></li>
+            {% for i in range(1, solop + 1) %}
+                <li class="page-item"><a class="page-link"
+                                         href="{{ url_for('dieuchinhdanhsachlop',page = i) }}">{{ i }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% for ten_lop, danh_sach_hoc_sinh in lophocsinh.items() %}
+        <div class="container mt-3">
+            <h2>Lớp: {{ ten_lop }}</h2>
+            <p>Sĩ số: {{ danh_sach_hoc_sinh | length }}</p>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Họ tên</th>
+                    <th>Giới tính</th>
+                    <th>Năm sinh</th>
+                    <th>Địa chỉ</th>
+                    <th>Xóa</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for hs in danh_sach_hoc_sinh %}
+                    {% for info in hs %}
+                        <tr id = "{{info.UserID}}">
+                            <td>{{ loop.index }}</td>
+                            <td>{{ info.Ho }} {{ info.Ten }}</td>
+                            <td>{{ info.GioiTinh }}</td>
+                            <td>{{ info.NgaySinh.strftime('%Y') }}</td>
+                            <td>{{ info.DiaChi }}</td>
+                            <td>
+                                <button style="background: none; border: none"
+                                       onclick="RemoveHS('{{ info.UserID }}', '{{ ten_lop }}')">
+                                    <i class="fa-solid fa-minus"></i>
+                                </button>
+                            </td>
 
 
-        </tr>
-        {% endfor %}
-        {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-{% endfor %}
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
 
+    {% endfor %}
+
+    <script src="{{ url_for('static', filename='js/saveinfordshocsinh.js') }}"></script>
 {% endblock %}

@@ -202,7 +202,7 @@
         </div>
     </div>
 
-        {%  if total_page %}
+    {% if total_page %}
         <div class="container mt-3">
             <ul class="pagination">
                 <li class="page-item"><a class="page-link" href="#">Trang</a></li>
@@ -215,7 +215,7 @@
                 {% endfor %}
             </ul>
         </div>
-        {%  endif %}
+    {% endif %}
 
 
     <div class="container mt-3" id="div_danhsachhocsinh">
@@ -249,12 +249,14 @@
                     <td>{{ row['Email'] }}</td>
                     <td>
                         <div class="form-group">
-                            <input type="text" value="{{ row['Số điện thoại'] }}" class="form-control" onblur="UpdateSdt( {{ row['STT'] }}, this)">
+                            <input type="text" value="{{ row['Số điện thoại'] }}" class="form-control"
+                                   onblur="UpdateSdt( {{ row['STT'] }}, this)">
                         </div>
                     </td>
                     <td>
                         <div>
-                            <button type="submit" style="background: none; border: none" id="btn_remove_hocsinh" onclick="RemoveHocSinh({{ row['STT'] }})"><i
+                            <button type="submit" style="background: none; border: none" id="btn_remove_hocsinh"
+                                    onclick="RemoveHocSinh({{ row['STT'] }})"><i
                                     class="fa-solid fa-minus"></i></button>
                         </div>
                     </td>

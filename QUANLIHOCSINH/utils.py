@@ -77,7 +77,22 @@ def Pagination_Data(data, page, total_record = 10):
 
 
 
+def SaveIntoSession(dshocsinh):
+    dic = []
 
+    for hs in dshocsinh:
+        for info in hs:
+            dic.append({
+                "UserID": info.UserID,
+                "Họ": info.Ho,
+                "Tên": info.Ten,
+                "Điểm": info.DiemTbDauVao,
+                "Ngày sinh": info.NgaySinh,
+                "Giới tính":info.GioiTinh,
+                "Địa chỉ":info.DiaChi
+            })
+
+    return dic
 
 
 if __name__ == '__main__':

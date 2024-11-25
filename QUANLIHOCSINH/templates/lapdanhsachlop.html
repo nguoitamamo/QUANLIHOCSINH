@@ -1,59 +1,81 @@
 {% extends 'layout/base.html' %}
 
+{% block css %}
+    <style>
+
+        .btn-sua {
+            background-color: #ade6ad;
+            height: 50px;
+            width: 200px;
+            border-radius: 10px;
+        }
+    </style>
+
+{% endblock %}
 
 {% block content %}
 
-{%  if solop %}
-    <div class="container mt-3">
-        <ul class="pagination">
-            <li class="page-item"><a class="page-link" href="#">Lớp</a></li>
-            {% for i in range(1, solop + 1 ) %}
-            <li class="page-item"><a class="page-link" href="{{url_for('lapdanhsachlop',page = i) }}">{{i}}</a></li>
-            {% endfor %}
-        </ul>
-    </div>
-{% endif %}
+    {% if solop %}
+        <div class="container mt-3">
+            <ul class="pagination" style="justify-content: space-between;">
+                <div style="display: flex">
+                    <li class="page-item"><a class="page-link" href="#">Lớp</a></li>
+                    {% for i in range(1, solop + 1 ) %}
+                        <li class="page-item"><a class="page-link"
+                                                 href="{{ url_for('lapdanhsachlop',page = i) }}">{{ i }}</a></li>
+                    {% endfor %}
+                </div>
+                <div>
+                    <button class="btn btn-sua"><a href="{{ url_for('dieuchinhdanhsachlop') }}"
+                                                   style="text-decoration: none; color: black">Sửa</a></button>
+                </div>
+            </ul>
 
-{% for ten_lop, danh_sach_hoc_sinh in lophocsinh.items() %}
-<div class="container mt-3">
-    <h2>Lớp: {{ten_lop}}</h2>
-    <p>Sĩ số: {{ danh_sach_hoc_sinh | length }}</p>
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>STT</th>
-            <th>Họ tên</th>
-            <th>Giới tính</th>
-            <th>Năm sinh</th>
-            <th>Địa chỉ</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for hs in danh_sach_hoc_sinh %}
-            {% for info in hs %}
+        </div>
+    {% endif %}
+
+
+
+    {% for ten_lop, danh_sach_hoc_sinh in lophocsinh.items() %}
+        <div class="container mt-3">
+            <h2>Lớp: {{ ten_lop }}</h2>
+            <p>Sĩ số: {{ danh_sach_hoc_sinh | length }}</p>
+            <table class="table table-striped">
+                <thead>
                 <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ info.Ho }} {{ info.Ten }}</td>
-                    <td>{{ info.GioiTinh }}</td>
-                    <td>{{ info.NgaySinh.strftime('%Y') }}</td>
-                    <td>{{ info.DiaChi }}</td>
-        {#            <td>#}
-        {#                <button type="submit" style="background: none; border: none"><i class="fa-solid fa-plus"></i>#}
-        {#                </button>#}
-        {#            </td>#}
-        {#            <td>#}
-        {#                <button type="submit" style="background: none; border: none" id = "btn_remove_hocsinh"><i class="fa-solid fa-minus"></i></button>#}
-        {#            </td>#}
-
-
+                    <th>STT</th>
+                    <th>Họ tên</th>
+                    <th>Giới tính</th>
+                    <th>Năm sinh</th>
+                    <th>Địa chỉ</th>
                 </tr>
-            {% endfor %}
-        {% endfor %}
-        </tbody>
-    </table>
-</div>
+                </thead>
+                <tbody>
+                {% for hs in danh_sach_hoc_sinh %}
+                    {% for info in hs %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ info.Ho }} {{ info.Ten }}</td>
+                            <td>{{ info.GioiTinh }}</td>
+                            <td>{{ info.NgaySinh.strftime('%Y') }}</td>
+                            <td>{{ info.DiaChi }}</td>
+                            {#            <td>#}
+                            {#                <button type="submit" style="background: none; border: none"><i class="fa-solid fa-plus"></i>#}
+                            {#                </button>#}
+                            {#            </td>#}
+                            {#            <td>#}
+                            {#                <button type="submit" style="background: none; border: none" id = "btn_remove_hocsinh"><i class="fa-solid fa-minus"></i></button>#}
+                            {#            </td>#}
 
-{% endfor %}
+
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    {% endfor %}
 
 
 {% endblock %}

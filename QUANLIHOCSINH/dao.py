@@ -1,3 +1,4 @@
+
 from itertools import islice, count
 from math import ceil
 
@@ -8,6 +9,7 @@ import unidecode
 import hashlib
 import cloudinary
 from cloudinary import uploader
+from datetime import datetime
 
 import random
 
@@ -201,10 +203,19 @@ def Cnt_Sum_Lop(khoi):
     return db.session.query(func.count(models.Lop.MaKhoi)).filter(models.Khoi.MaKhoi.__eq__(khoi)).scalar()
 
 
-def HocSinhNotLop(tb):
-    HocSinhNotLop = db.session.query(models.HocSinh).filter(models.HocSinh.MaHocSinh.notin_(
-        db.session.query(models.LopHocSinh.MaHocSinh)
-    )).order_by(models.HocSinh.DiemTbDauVao.desc()).limit(tb).all()
+def HocSinhNotLop(tb= None):
+    if tb:
+        HocSinhNotLop = db.session.query(models.HocSinh).filter(models.HocSinh.MaHocSinh.notin_(
+            db.session.query(models.LopHocSinh.MaHocSinh)
+        )).order_by(models.HocSinh.DiemTbDauVao.desc()).limit(tb).all()
+    else:
+        HocSinhNotLop = db.session.query(models.HocSinh).filter(models.HocSinh.MaHocSinh.notin_(
+            db.session.query(models.LopHocSinh.MaHocSinh)
+        )).order_by(models.HocSinh.DiemTbDauVao.desc()).all()
+
+
+        HocSinhNotLop = [LoadHSLopInfo(hs.MaHocSinh) for hs in HocSinhNotLop]
+
     return HocSinhNotLop
 
 
@@ -287,7 +298,7 @@ def GetUserNameByID(username):
     return models.Account.query.filter(models.Account.TenDangNhap.__eq__(username)).first().id
 
 def GetLopByID(malop):
-    inforlop = db.session.query(models.Lop.TenLop , models.Lop.SiSo).filter(models.Lop.MaLop == malop).first()
+    inforlop = db.session.query(models.Lop.TenLop , models.Lop.SiSo,models.Lop.MaLop ).filter(models.Lop.MaLop == malop).first()
     return inforlop
 
 
@@ -331,7 +342,7 @@ def LoadLop(solop , page = 1):
     return paginated_lop_hocsinh
 
 def LoadHSLopInfo(mahocsinh):
-    inforhocsinh = (db.session.query(models.UserInfor.Ho , models.UserInfor.Ten , models.UserInfor.GioiTinh, models.UserInfor.NgaySinh, models.UserInfor.DiaChi)
+    inforhocsinh = (db.session.query(models.UserInfor.UserID,models.UserInfor.Ho , models.UserInfor.Ten , models.HocSinh.DiemTbDauVao, models.UserInfor.GioiTinh, models.UserInfor.NgaySinh, models.UserInfor.DiaChi)
                     .join( models.Account, models.Account.id == models.UserInfor.UserID)
                     .join( models.HocSinh, models.HocSinh.MaHocSinh == models.Account.id)
                     .filter(models.UserInfor.UserID == mahocsinh)
@@ -354,9 +365,23 @@ def removeHocSinh(malop, mahocsinh):
 
 
 
-def Get_Cnt_Lop_New(maxsslop):
-    return  ceil(( db.session.query( models.LopHocSinh.NamTaoLop == "2022").count() ) / maxsslop )
 
+def addHocSinhToLop(mahocsinh, malop):
+    currentyear = str(datetime.now().year)
+    lophocsinh = models.LopHocSinh ( MaHocSinh = mahocsinh, MaLop = malop, NamTaoLop = currentyear )
+    db.session.add(lophocsinh)
+    db.session.commit()
+    return True
+
+
+def SoLop(maxsslop):
+    currentyear = str(datetime.now().year)
+    return  ceil(( db.session.query( models.LopHocSinh.NamTaoLop == currentyear).count() ) / maxsslop )
+
+
+def Solop1(maxsslop):
+    currentyear = str(datetime.now().year)
+    return  ( db.session.query( models.LopHocSinh.NamTaoLop == currentyear).count() ) / maxsslop
 
 
 
@@ -364,7 +389,7 @@ Ho = [ "Phan", "Ly", "Thanh", "La" , "Hoang"]
 Ten =["Trung", "Trinh", "A", "D", "E", "G", "B"]
 
 def them():
-    for i in range(1, 420):
+    for i in range(1,425 ):
         idac = "HS" + str(Get_Cnt_Accout_Current()) + "_" + str(random.randint(100, 999))
         hocsinh = models.HocSinh(MaHocSinh = idac , DiemTbDauVao = float(random.randint(1,10)))
         db.session.add(hocsinh)
@@ -396,5 +421,14 @@ if __name__ == '__main__':
         #     for hs in danh_sach_hoc_sinh:
         #         for info in hs:
         #             print(
-        #                 f"Họ: {info.Ho}, Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
-        print(Get_Cnt_Lop_New(40))
+        #                 f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
+        dshocsinh = HocSinhNotLop()
+
+        for i in dshocsinh:
+            for info in i:
+                print(
+                    f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Điểm: {info.DiemTbDauVao} Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
+
+            # print(Solop1(40))
+        # them()
+        # print(GetLopByID('L' + '10A1').MaLop)

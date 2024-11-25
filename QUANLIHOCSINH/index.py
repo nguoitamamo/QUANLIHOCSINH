@@ -4,9 +4,9 @@ from QUANLIHOCSINH import app, login
 from flask import render_template, request, url_for, redirect, session, jsonify
 from flask_login import login_user, logout_user, current_user
 import utils, dao
-from math import ceil
 
-from QUANLIHOCSINH.dao import Get_Cnt_Lop_New
+
+
 
 
 @app.route('/')
@@ -16,12 +16,13 @@ def index():
 
 @app.route('/signin')
 def signin():
+
     return render_template('signin.html')
 
 
 @app.route('/signup')
 def signup():
-    return render_template('signup.html', flag="confirm", Permission=dao.Load_PermissionALL())
+    return render_template('signup.html')
 
 
 @app.route("/signin", methods=["POST", "GET"])
@@ -159,14 +160,15 @@ def capnhatthongtin():
 @app.route('/user/lapdanhsachlop')
 def lapdanhsachlop():
 
+    solop = int(dao.SoLop((app.config["MAX_SS_LOP"])))
+    print(solop)
 
-    if dao.Cnt_Sum_HocSinh_Not_Lop() != int(0):
-        solop = ceil(dao.Cnt_Sum_HocSinh_Not_Lop() / 40)
+
+    if dao.Cnt_Sum_HocSinh_Not_Lop() > int(10):
         dao.Division_Class(solop)
 
     page = request.args.get('page', 1)
 
-    solop = int(Get_Cnt_Lop_New((40)))
 
     lophocsinh = dao.LoadLop(solop, page=int(page))
 
@@ -197,9 +199,79 @@ def xuatdiem():
 
 @app.route('/user/dieuchinhdanhsachlop')
 def dieuchinhdanhsachlop():
+
+    if session.get('dshocsinhnotlop'):
+        session.get('dshocsinhnotlop').clear()
+        session.modified =True
+
+
+    solop = int(dao.SoLop((app.config["MAX_SS_LOP"])))
+
     page = request.args.get('page', 1)
-    lophocsinh = dao.LoadLop(12, page=int(page))
-    return render_template("dieuchinhdanhsachlop.html", lophocsinh=lophocsinh)
+    lophocsinh = dao.LoadLop(solop, page=int(page))
+
+    dshocsinhnotlop = dao.HocSinhNotLop()
+
+    # session["dshocsinhnotlop"] = utils.SaveIntoSession(dshocsinhnotlop)
+
+    return render_template("dieuchinhdanhsachlop.html", lophocsinh=lophocsinh,
+                                                                          solop = solop ,
+                                                                          dshocsinhnotlop = dshocsinhnotlop)
+
+@app.route('/user/dieuchinhdanhsachlop/addhocsinh/<id>', methods=["POST"])
+def savehocsinhtosession(id):
+
+    if "dshocsinhnotlop" not in session:
+        session['dshocsinhnotlop'] = []
+
+
+    if id not in session.get('dshocsinhnotlop'):
+        session['dshocsinhnotlop'].append(id)
+        session.modified =True
+        return jsonify({"success": True})
+
+
+
+
+@app.route('/user/dieuchinhdanhsachlop/addhocsinh', methods=["POST"])
+def addhocsinhtolop():
+
+    try:
+        page = request.args.get('page', 1)
+
+
+        for i in session['dshocsinhnotlop']:
+
+            dao.addHocSinhToLop(mahocsinh = i, malop= 'L10A' + str(page) )
+
+            session.get('dshocsinhnotlop').clear()
+            session.modified = True
+
+            return jsonify({"success": True})
+
+
+    except Exception as ex:
+
+        return jsonify({"success": False})
+
+
+
+
+
+
+@app.route('/user/dieuchinhdanhsachlop/removehocsinh/<id>', methods=["POST"])
+def removehocsinhtosession(id):
+
+
+
+    for index, i in enumerate(session['dshocsinhnotlop']):
+        if i == id:
+            session['dshocsinhnotlop'].pop(index)
+            session.modified =True
+
+            return jsonify({"success": True})
+
+
 
 
 @app.route('/user/tiepnhanhocsinh', methods=["POST", "GET"])
@@ -248,17 +320,17 @@ def approvepermission():
     permissionuser = request.get_json()
     username = permissionuser.get('username')
     permissionvalue = permissionuser.get('permissionvalue')
-    print(permissionvalue, username)
+
 
     permissionid = dao.GetPerMissionByValue(permissionvalue)
     userid = dao.GetUserNameByID(username)
-    print(permissionid, userid)
+
 
     success = dao.AddPermissionUser(permissionid=permissionid, userid=userid)
 
     for index, i in enumerate(session.get("PermissionUser", [])):
         for key in i.keys():
-            print(key, i[key])
+
             if key == permissionvalue and i[key] == username:
                 session["PermissionUser"].pop(index)
                 break
@@ -272,7 +344,7 @@ def approvepermission():
 def acctiveaccount():
     activeuser = request.get_json()
     username = activeuser.get('username')
-    print("Kích hoạt tài khoản:", username)
+
 
     dao.ActiveAccount(dao.GetUserNameByID(username))
 
@@ -451,6 +523,20 @@ def saveinforDshocsinh():
     except Exception as e:
         return jsonify({"success": False})
 
+
+
+@app.route('/user/dieuchinhdanhsachlop/removehocsinh/<tenlop>/<mahocsinh>', methods =['post'])
+def removehs(tenlop, mahocsinh):
+    try:
+        malop = 'L' + tenlop
+
+        res= dao.removeHocSinh(malop, mahocsinh)
+
+        return jsonify({"success": res})
+
+    except Exception as e:
+        return jsonify({"success": False})
+
 @login.user_loader
 def user_load(id):
     return dao.Get_User_By_ID(id=id)
@@ -458,5 +544,4 @@ def user_load(id):
 
 if __name__ == "__main__":
     from QUANLIHOCSINH.admin import *
-
     app.run(debug=True)

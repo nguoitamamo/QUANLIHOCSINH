@@ -40,14 +40,14 @@ function RemoveHocSinh(stt) {
 
 }
 
-function SaveInforDshocsinh(){
+function SaveInforDshocsinh() {
 
     alert("dã click")
     fetch(`/user/uploaddanhsachhocsinh/savedshocsinh`, {
         method: 'post',
         headers: {
             'Content-Type': 'application/json',
-        },
+        }
     }).then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -57,4 +57,74 @@ function SaveInforDshocsinh(){
             }
         })
 
+}
+
+
+function RemoveHS(MaHocSinh, TenLop) {
+
+
+    fetch(`/user/dieuchinhdanhsachlop/removehocsinh/${TenLop}/${MaHocSinh}`, {
+        method: 'post',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const row = document.getElementById(`${MaHocSinh}`);
+                if (row) {
+                    row.remove();
+                }
+                window.location.reload();
+            } else {
+                alert("Xóa không thành công!")
+            }
+        })
+}
+
+function CheckAddHocSinh(id, obj) {
+
+    if (obj.checked) {
+        fetch(`/user/dieuchinhdanhsachlop/addhocsinh/${id}`, {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+    } else {
+        fetch(`/user/dieuchinhdanhsachlop/removehocsinh/${id}`, {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+    }
+
+
+}
+
+
+function AddHocSinhToLop() {
+    alert("ddax vafo")
+    fetch('/user/dieuchinhdanhsachlop/addhocsinh', {
+        method: 'post',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+
+    }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            }
+        })
+
+}
+
+window.onload = function() {
+    const checkboxes = document.querySelectorAll('.form-check-input');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
 }
