@@ -1,10 +1,20 @@
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, Date, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, Date, DateTime, Boolean,Enum
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin
 from QUANLIHOCSINH import db, app
 from enum import unique
+from enum import Enum as Emun1
+
+
+
+class Role(Emun1):
+    Admin = 1
+    GiangVien = 2
+    NhanvienBoPhanKhac = 3
+    HocSinh = 4
+
 
 
 class Account(db.Model, UserMixin):
@@ -16,10 +26,11 @@ class Account(db.Model, UserMixin):
     Active = Column(Boolean, default=False)
     UserInfor = relationship("UserInfor", backref='account', uselist= False, lazy=True)
     PermissionUsers = relationship("PermissionUser", backref='account', lazy=True)
-    Admin = relationship("Admin", backref='account',uselist= False,  lazy=True)
-    NhanVienBoPhanKhac = relationship("NhanVienBoPhanKhac", backref='account', uselist= False, lazy=True)
-    GiangVien = relationship("GiangVien", backref='account', uselist= False, lazy=True)
+    # Admin = relationship("Admin", backref='account',uselist= False,  lazy=True)
+    # NhanVienBoPhanKhac = relationship("NhanVienBoPhanKhac", backref='account', uselist= False, lazy=True)
+    # GiangVien = relationship("GiangVien", backref='account', uselist= False, lazy=True)
     HocSinh = relationship("HocSinh", backref='account', uselist= False, lazy=True)
+    role = Column(Enum(Role), default=Role.GiangVien)
 
 
 class UserInfor(db.Model):
@@ -69,15 +80,15 @@ class PermissionUser(db.Model):
         return f"<Permission(Permission={self.PermissionID}, Value='{self.Value}')>"
 
 
-class Admin(db.Model):
-    __tablename__ = 'admin'
-    AdminID = Column(String(20),ForeignKey('account.id') , primary_key=True)
-
-
-
-class NhanVienBoPhanKhac(db.Model):
-    __tablename__ = 'nhanvienbophankhac'
-    MaNV = Column(String(20), ForeignKey('account.id'),primary_key=True)
+# class Admin(db.Model):
+#     __tablename__ = 'admin'
+#     AdminID = Column(String(20),ForeignKey('account.id') , primary_key=True)
+#
+#
+#
+# class NhanVienBoPhanKhac(db.Model):
+#     __tablename__ = 'nhanvienbophankhac'
+#     MaNV = Column(String(20), ForeignKey('account.id'),primary_key=True)
 
 
 class MonHoc(db.Model):
@@ -86,12 +97,17 @@ class MonHoc(db.Model):
     TenMonHoc = Column(String(30), nullable=False)
     GiangViens = relationship('GiangVien', backref='monhoc', lazy=True)
     Diems = relationship('Diem', backref='monhoc', lazy=True)
+    Hocs = relationship('Hoc', backref='monhoc', lazy=True)
 
 
 class GiangVien(db.Model):
     __tablename__ = 'giangvien'
     MaGiangVien = Column(String(20), ForeignKey('account.id'), primary_key=True)
     MaMonHoc = Column(String(20), ForeignKey('monhoc.MaMonHoc'), nullable=False)
+    Hocs = relationship('Hoc', backref='giangvien', lazy=True)
+
+
+
 
 
 class Khoi(db.Model):
@@ -108,6 +124,16 @@ class Lop(db.Model):
     SiSo = Column(Integer, nullable=False)
     MaKhoi = Column(Integer, ForeignKey('khoi.MaKhoi'), nullable=False)
     LopHocSinhs = relationship('LopHocSinh', backref='lop', lazy=True)
+    Hocs = relationship('Hoc', backref='lop', lazy=True)
+
+
+class Hoc(db.Model):
+    __tablename__ = 'hoc'
+    Ma = Column ( Integer, primary_key=True, autoincrement=True)
+    MaLop = Column( String(20),ForeignKey('lop.MaLop'), nullable=False)
+    MaMonHoc = Column(String(20), ForeignKey('monhoc.MaMonHoc'), nullable=False)
+    MaGiangVien = Column(String(20), ForeignKey('giangvien.MaGiangVien'), nullable=False)
+    MaHocKi = Column(Integer, ForeignKey('hocki.MaHocKi'), nullable=False)
 
 
 class HocSinh(db.Model):
@@ -132,6 +158,7 @@ class HocKi(db.Model):
     TenHocKi = Column(String(20), nullable=True)
     NamHoc = Column(Integer, nullable=True)
     Diems = relationship('Diem', backref='hocki', lazy=False)
+    Hocs = relationship('Hoc', backref='hocki', lazy=True)
 
 
 class Diem(db.Model):

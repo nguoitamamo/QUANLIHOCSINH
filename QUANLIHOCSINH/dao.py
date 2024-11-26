@@ -95,11 +95,21 @@ def Check_Username_Exits(username):
 def Add_User(username, password, lastname, fristname, ngaysinh, gioitinh, diachi, email, permission, sdt: list[str] , monhoc = None, avatar =None):
     passwrd = str(hashlib.md5(password.strip().encode('utf-8')).hexdigest())
 
-    idac = "HS" + str(Get_Cnt_Accout_Current()) + "_" + str(random.randint(100, 999))
+    idac = "HS" + str(Get_Cnt_Accout_Current()) + "_" + str(random.randint(10, 99))
 
     user = models.Account(id=idac,
                           TenDangNhap=username.strip(),
                           MatKhau=passwrd)
+
+    if permission == "Giảng viên" and monhoc:
+        user.role= models.Role.GiangVien
+        giangvien= models.GiangVien(MaGiangVien = idac , MaMonHoc = Get_MonHoc_By_TenMonHoc (monhoc))
+        db.session.add(giangvien)
+
+    else:
+        user.role = models.Role.NhanvienBoPhanKhac
+
+
     db.session.add(user)
 
     inforuser = models.UserInfor(UserID=idac, Ho=lastname.strip(), Ten=fristname.strip(), NgaySinh=ngaysinh, GioiTinh=gioitinh,
@@ -108,16 +118,10 @@ def Add_User(username, password, lastname, fristname, ngaysinh, gioitinh, diachi
     if avatar:
         res = cloudinary.uploader.upload(avatar)
         inforuser.Image = res.get('secure_url')
-        print(res.get('secure_url'))
 
     db.session.add(inforuser)
 
-    if permission == "Giảng viên" and monhoc:
-        giangvien = models.GiangVien(MaGiangVien=idac, MaMonHoc=Get_MonHoc_By_TenMonHoc(monhoc))
-        db.session.add(giangvien)
-    else:
-        nhanvien = models.NhanVienBoPhanKhac(MaNV=idac)
-        db.session.add(nhanvien)
+
 
     if sdt:
         for i in sdt:
@@ -160,14 +164,14 @@ def LoadEmailConfirm(value):
 
 def add_HocSinh(diemTbDauVao, firstname, lastname, ngaysinh, gioitinh, diachi, email,sdt =None,  avatar =None):
 
-    idac = "HS" + str(Get_Cnt_Accout_Current()) + "_"  + str(random.randint(100,999))
+    idac = "HS" + str(Get_Cnt_Accout_Current()) + "_"  + str(random.randint(10,99))
 
     hocsinh = models.HocSinh(MaHocSinh=idac, DiemTbDauVao=diemTbDauVao)
     db.session.add(hocsinh)
 
     password_hash = hashlib.md5(idac.encode('utf-8')).hexdigest()
 
-    accoutHocSinh = models.Account(id=idac, TenDangNhap="HocSinh" + str(idac), MatKhau=password_hash)
+    accoutHocSinh = models.Account(id=idac, TenDangNhap="HocSinh" + str(idac), MatKhau=password_hash ,role = models.Role.HocSinh)
     db.session.add(accoutHocSinh)
 
     inforHocSinh = models.UserInfor(UserID=idac, Ho=firstname, Ten=lastname, NgaySinh=ngaysinh, GioiTinh=gioitinh, DiaChi=diachi,
@@ -291,8 +295,12 @@ def Division_Class(solopcanchia):
 def GetPerMissionByValue(value):
     return models.Permission.query.filter(models.Permission.Value.__eq__(value)).first().PermissionID
 
-def GetPerMissionByID(id):
-    return models.Permission.query.filter(models.Permission.PermissionID.__eq__(id)).first().Value
+def GetPerMission(id = None , value = None):
+
+    if id:
+        return models.Permission.query.filter(models.Permission.PermissionID.__eq__(id)).first()
+    if value:
+        return models.Permission.query.filter(models.Permission.Value.__eq__(value)).first()
 
 
 def GetUserNameByID(username):
@@ -311,7 +319,7 @@ def CheckPermissionUserExit(permissionid, userid):
 
 def AddPermissionUser(permissionid, userid):
 
-    if CheckPermissionUserExit(permissionid, userid):
+    if not CheckPermissionUserExit(permissionid, userid):
         perrmissionuser = models.PermissionUser(PermissionID=permissionid, UserID=userid)
         db.session.add(perrmissionuser)
         db.session.commit()
@@ -401,13 +409,13 @@ Ten =["Trung", "Trinh", "A", "D", "E", "G", "B"]
 
 def them():
     for i in range(1,425 ):
-        idac = "HS" + str(Get_Cnt_Accout_Current()) + "_" + str(random.randint(100, 999))
+        idac = "HS" + str(Get_Cnt_Accout_Current()) + "_" + str(random.randint(10, 99))
         hocsinh = models.HocSinh(MaHocSinh = idac , DiemTbDauVao = float(random.randint(1,10)))
         db.session.add(hocsinh)
 
         password_hash = hashlib.md5(str(i).encode('utf-8')).hexdigest()
 
-        accoutHocSinh = models.Account(id= idac , TenDangNhap="HocSinhmoi" + str(i), MatKhau=password_hash)
+        accoutHocSinh = models.Account(id= idac , TenDangNhap="HocSinhmoi" + str(i), MatKhau=password_hash, role= models.Role.HocSinh)
         db.session.add(accoutHocSinh)
 
         inforHocSinh = models.UserInfor(UserID=idac, Ho=Ho[(i%5)], Ten=Ten[(i%7)], NgaySinh="2008-11-12", GioiTinh="Nam",DiaChi="Bình định", Email="test" + str(i) + "@gmail.com", Image=None)
@@ -426,20 +434,20 @@ def them():
 
 if __name__ == '__main__':
     with app.app_context():
-        # lop_hocsinh = LoadLop(11,2)
-        # for ma_lop, danh_sach_hoc_sinh in lop_hocsinh.items():
-        #     print(f"Lớp: {ma_lop}")
-        #     for hs in danh_sach_hoc_sinh:
-        #         for info in hs:
-        #             print(
-        #                 f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
-        dshocsinh = HocSinhNotLop()
-
-        for i in dshocsinh:
-            for info in i:
-                print(
-                    f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Điểm: {info.DiemTbDauVao} Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
+        lop_hocsinh = LoadLop(11,1)
+        for ma_lop, danh_sach_hoc_sinh in lop_hocsinh.items():
+            print(f"Lớp: {ma_lop}")
+            for hs in danh_sach_hoc_sinh:
+                for info in hs:
+                    print(
+                        f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
+        # dshocsinh = HocSinhNotLop()
+        #
+        # for i in dshocsinh:
+        #     for info in i:
+        #         print(
+        #             f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Điểm: {info.DiemTbDauVao} Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
 
             # print(Solop1(40))
-        # them()
+        print(Cnt_Sum_HocSinh_Not_Lop())
         # print(GetLopByID('L' + '10A1').MaLop)

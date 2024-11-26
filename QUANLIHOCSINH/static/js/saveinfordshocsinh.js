@@ -42,8 +42,7 @@ function RemoveHocSinh(stt) {
 
 function SaveInforDshocsinh() {
 
-    alert("dã click")
-    fetch(`/user/uploaddanhsachhocsinh/savedshocsinh`, {
+    fetch('/user/uploaddanhsachhocsinh/savedshocsinh', {
         method: 'post',
         headers: {
             'Content-Type': 'application/json',
@@ -51,9 +50,7 @@ function SaveInforDshocsinh() {
     }).then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("đã lưu")
-            } else {
-                alert("Xóa thất bại. Vui lòng thử lại!");
+                window.location.reload()
             }
         })
 

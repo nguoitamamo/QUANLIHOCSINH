@@ -1,0 +1,187 @@
+{% extends 'layout/base.html' %}
+
+
+{% block title %} Nhập điểm {% endblock %}
+
+
+{% block css %}
+    <style>
+        .form-container {
+            max-width: 600px;
+            border-radius: 8px;
+        }
+
+        .form-row {
+            display: flex;
+            justify-content: end;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .form-row label {
+            flex: 1;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .form-row input[type="text"] {
+            flex: 2;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-row input[type="text"] + label {
+            margin-left: 20px;
+        }
+
+
+        .custom-table {
+
+            border-collapse: collapse;
+            width: 100%;
+            text-align: center;
+        }
+
+        .custom-table th,
+        .custom-table td {
+            border: 1px solid #999;
+            padding: 8px;
+        }
+
+
+        .custom-table thead th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+
+        .custom-table tr td input[type="text"] {
+            height: 100%;
+            width: 100%;
+            border: none;
+            background: none;
+        }
+
+        .custom-table button {
+            border-radius: 30px;
+            width: 30px;
+        }
+
+        .btn_custom {
+            background: none;
+            border: none;
+            margin: 0 5px;
+
+        }
+
+        tr:hover {
+            background-color: #e8d556;
+        }
+    </style>
+
+{% endblock %}
+{% block content %}
+
+    <div class="container mt-3">
+        <h3>BẢNG ĐIỂM MÔN HỌC</h3>
+        <form action="" method="post" class="form-container">
+            <div class="form-row">
+                <label for="lop">Lớp: </label>
+                <input type="text" id="lop">
+                <label for="monhoc">Môn học: </label>
+                <input type="text" id="monhoc">
+            </div>
+            <div class="form-row">
+                <label for="hocky">Học kỳ: </label>
+                <input type="text" id="hocky">
+                <label for="namhoc">Năm học: </label>
+                <input type="text" id="namhoc">
+            </div>
+        </form>
+
+        <table class="table table-striped custom-table" id="scoreTable">
+            <thead>
+            <tr>
+                <th rowspan="2">STT</th>
+                <th rowspan="2">Họ tên</th>
+
+                <th colspan="{{ session.get('socot15phut') }}" id="score15Header" style="width: 20%;">
+                    Điểm 15 phút
+                    <button onclick="Column15phut('them')">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                    <button onclick="Column15phut('xoa')">
+                        <i class="fa-solid fa-minus"></i>
+                    </button>
+                </th>
+
+                <th colspan="{{ session.get('socot1tiet') }}" id="score1Header" style="width: 20%;">
+                    Điểm 1 tiết
+                    <button onclick="Column1tiet('them')">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                    <button onclick="Column1tiet('xoa')">
+                        <i class="fa-solid fa-minus"></i>
+                    </button>
+                </th>
+
+                <th rowspan="2">Điểm thi</th>
+            </tr>
+            <tr id="subHeader">
+                {% for i in range(1, session.get('socot15phut') + 1) %}
+                    <th class="score15" style="width: 10%;">{{ i }}</th>
+                {% endfor %}
+
+                {% for i in range(1, session.get('socot1tiet') + 1) %}
+                    <th class="score1" style="width: 10%;">{{ i }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>1</td>
+                <td>Nguyễn Văn A</td>
+                {% for i in range(1, session.get('socot15phut') + 1) %}
+                    <td class="score15"><input type="text"></td>
+                {% endfor %}
+
+                {% for i in range(1, session.get('socot1tiet') + 1) %}
+                    <td class="score1"><input type="text"></td>
+                {% endfor %}
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>Nguyễn Văn A</td>
+                {% for i in range(1, session.get('socot15phut') + 1) %}
+                    <td class="score15"><input type="text"></td>
+                {% endfor %}
+
+                {% for i in range(1, session.get('socot1tiet') + 1) %}
+                    <td class="score1"><input type="text"></td>
+                {% endfor %}
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>Nguyễn Văn A</td>
+                {% for i in range(1, session.get('socot15phut') + 1) %}
+                    <td class="score15"><input type="text"></td>
+                {% endfor %}
+
+                {% for i in range(1, session.get('socot1tiet') + 1) %}
+                    <td class="score1"><input type="text"></td>
+                {% endfor %}
+                <td><input type="text"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <script src={{ url_for('static', filename = 'js/nhapdiem.js') }}>
+
+
+        </script>
+    </div>
+
+{% endblock %}

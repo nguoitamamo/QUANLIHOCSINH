@@ -1,6 +1,6 @@
 function DuyetPermissionUser(permissionvalue, username) {
     fetch('/approvepermission', {
-        method: 'POST',
+        method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
         },
