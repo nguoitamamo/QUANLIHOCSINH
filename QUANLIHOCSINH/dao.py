@@ -143,6 +143,10 @@ def Load_PermissionALL():
     return models.Permission.query.all()
 
 
+def Load_LopALL():
+    return models.Lop.query.all()
+
+
 def rand_Pass_Confirm_Email():
     return str(random.randint(10000, 99999))
 
@@ -306,9 +310,13 @@ def GetPerMission(id = None , value = None):
 def GetUserNameByID(username):
     return models.Account.query.filter(models.Account.TenDangNhap.__eq__(username)).first().id
 
-def GetLopByID(malop):
-    inforlop = db.session.query(models.Lop.TenLop , models.Lop.SiSo,models.Lop.MaLop ).filter(models.Lop.MaLop == malop).first()
-    return inforlop
+def GetLopByTen(tenLop):
+    return db.session.query(models.Lop.TenLop , models.Lop.SiSo,models.Lop.MaLop ).filter(models.Lop.TenLop == tenLop).first()
+
+
+def GetMonHocByMaMonHoc(mamonhoc):
+    return db.session.query(models.MonHoc.TenMonHoc, models.MonHoc.MaMonHoc).filter(models.MonHoc.MaMonHoc == mamonhoc).first()
+
 
 
 def CheckPermissionUserExit(permissionid, userid):
@@ -402,6 +410,16 @@ def Solop1(maxsslop):
     currentyear = str(datetime.now().year)
     return  ( db.session.query( models.LopHocSinh.NamTaoLop == currentyear).count() ) / maxsslop
 
+def LoadMonHocOfLop(tenlop):
+    malop = GetLopByTen(tenlop).MaLop
+    print(malop)
+    if not malop:
+        return []
+
+    return (db.session.query(models.Hoc.MaLop, models.Hoc.MaMonHoc, models.Hoc.MaHocKi)
+        .filter(models.Hoc.MaLop == malop)
+        .all())
+
 
 
 Ho = [ "Phan", "Ly", "Thanh", "La" , "Hoang"]
@@ -425,6 +443,7 @@ def them():
 
 
 
+
 # c
 #     for i in range(1, 11):
 #         lop = models.Lop( MaLop = "L10A" + str(i) , TenLop = "10A" + str(i) , SiSo = 40 , MaKhoi =1 )
@@ -434,13 +453,13 @@ def them():
 
 if __name__ == '__main__':
     with app.app_context():
-        lop_hocsinh = LoadLop(11,1)
-        for ma_lop, danh_sach_hoc_sinh in lop_hocsinh.items():
-            print(f"Lớp: {ma_lop}")
-            for hs in danh_sach_hoc_sinh:
-                for info in hs:
-                    print(
-                        f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
+        # lop_hocsinh = LoadLop(11,1)
+        # for ma_lop, danh_sach_hoc_sinh in lop_hocsinh.items():
+        #     print(f"Lớp: {ma_lop}")
+        #     for hs in danh_sach_hoc_sinh:
+        #         for info in hs:
+        #             print(
+        #                 f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
         # dshocsinh = HocSinhNotLop()
         #
         # for i in dshocsinh:
@@ -449,5 +468,6 @@ if __name__ == '__main__':
         #             f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Điểm: {info.DiemTbDauVao} Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
 
             # print(Solop1(40))
-        print(Cnt_Sum_HocSinh_Not_Lop())
+        # print(LoadMonHocOfLop('10A1'))
         # print(GetLopByID('L' + '10A1').MaLop)
+        print( LoadMonHocOfLop('10A1'))

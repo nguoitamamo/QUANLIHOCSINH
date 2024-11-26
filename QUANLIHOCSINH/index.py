@@ -190,10 +190,43 @@ def nhapdiem():
         session['socot1tiet'] = 1
 
 
-    return render_template("nhapdiem.html")
+    lop = dao.Load_LopALL()
+
+    monhocs = dao.LoadMonHocOfLop('10A1')
+    print(monhocs)
+
+    return render_template("nhapdiem.html", lop  = lop, monhocs=monhocs)
+
+@app.route('/user/nhapdiem/loadmon/<tenlop>', methods=["POST"])
+def loadmoninlop(tenlop):
+    try:
+
+        monhocs = dao.LoadMonHocOfLop(tenlop)
+
+        monhocs_list = [
+            {"TenMonHoc": dao.GetMonHocByMaMonHoc(mh.MaMonHoc).TenMonHoc } for mh in monhocs
+        ]
+        print(monhocs)
+        print(monhocs_list)
+
+        print(request.args.get('monhocs',[]))
 
 
-@app.route('/user/nhapdiem/column15phut/<state>', methods=['POST'])
+        return jsonify({
+            "success": True,
+            "monhocs": monhocs_list
+        })
+
+    except Exception as e:
+        # Xử lý lỗi và trả về thông báo
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        })
+
+
+
+@app.route('/user/nhapdiem/column15phut/<state>', methods=['PUT'])
 def column15phut(state):
     try:
 
@@ -218,7 +251,7 @@ def column15phut(state):
         return jsonify({'success': False})
 
 
-@app.route('/user/nhapdiem/column1tiet/<state>', methods=['POST'])
+@app.route('/user/nhapdiem/column1tiet/<state>', methods=['PUT'])
 def addcolumn1tiet(state):
 
     try:
