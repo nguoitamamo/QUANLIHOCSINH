@@ -194,7 +194,7 @@ main {
 .btn-save-infor-hocsinh {
     height: 50px;
     width: 200px;
-    margin: 40px 15% 45px;
+    /*margin: 40px 15% 45px;*/
     background: #ade6ad;
     border-radius: 15px;
 }

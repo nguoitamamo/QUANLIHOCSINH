@@ -373,6 +373,7 @@ def LoadLop(ma, key, page, mamonhoc=None, mahocki=None):
         diemdshocsinh = []
         for hs in hocsinh:
             hs_diem = {
+                "MaHocSinh" : hs.MaHocSinh,
                 "HoTen": GetUserInforByUserID(hs.MaHocSinh),
                 **LoadHSinfo(hs.MaHocSinh, key="diem", typediem=TypeDiem, mamonhoc=mamonhoc, mahocki=mahocki)
             }
@@ -416,6 +417,7 @@ def LoadHSinfo(mahocsinh, key, typediem=TypeDiem, mamonhoc=None, mahocki=None):
                         .all())
 
         for diem in inforhocsinh:
+
             if diem.TypeDiem == TypeDiem.PHUT15.value:
                 diem15phut.append(diem.SoDiem)
             elif diem.TypeDiem == TypeDiem.TIET1.value:
@@ -523,7 +525,7 @@ def them():
 
 if __name__ == '__main__':
     with app.app_context():
-        lop_hocsinh = LoadLop(ma="10A", key="diem", mamonhoc = 'MH1', page=5, mahocki=1)
+        lop_hocsinh = LoadLop(ma="10A", key="diem", mamonhoc = 'MH1', page=2, mahocki=1)
 
 
         if lop_hocsinh and 'diemdshocsinh' in lop_hocsinh:

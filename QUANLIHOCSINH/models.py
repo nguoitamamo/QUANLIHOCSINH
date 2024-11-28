@@ -132,7 +132,7 @@ class Hoc(db.Model):
     Ma = Column ( Integer, primary_key=True, autoincrement=True)
     MaLop = Column( String(20),ForeignKey('lop.MaLop'), nullable=False)
     MaMonHoc = Column(String(20), ForeignKey('monhoc.MaMonHoc'), nullable=False)
-    MaGiangVien = Column(String(20), ForeignKey('giangvien.MaGiangVien'), nullable=False, unique=True)
+    MaGiangVien = Column(String(20), ForeignKey('giangvien.MaGiangVien'), nullable=False)
     MaHocKi = Column(Integer, ForeignKey('hocki.MaHocKi'), nullable=False)
 
 

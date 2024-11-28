@@ -196,7 +196,7 @@ def nhapdiem():
 
     lop = dao.Load_LopALL()
 
-    return render_template("nhapdiem.html", lop  = lop)
+    return render_template("nhapdiem.html", dslopcheckbox  = lop)
 
 @app.route('/user/nhapdiem/loadmon/<tenlop>', methods=["POST"])
 def loadmoninlop(tenlop):
@@ -229,12 +229,16 @@ def column15phut(state):
     try:
 
         if state == 'them':
+
+            print(f"cot: {session['socot15phut']}")
             socot15phut = session['socot15phut']
             socot15phut = socot15phut + 1
 
             session['socot15phut'] = int(socot15phut)
 
+
             session.modified = True
+            print(f"cot: {session['socot15phut']}")
 
         else:
             socot15phut = session['socot15phut']
@@ -606,26 +610,13 @@ def getinfolop():
 
         page = data['lop'][-1]
 
-
         mahocki = dao.GetHocKi(tenhocki = data['hocky'] , namhoc = data['namhoc'].replace(" ", "")).MaHocKi
-
 
         dshocsinh = dao.LoadLop( ma ='10A', key= "diem", mamonhoc = mamonhoc ,page = page , mahocki = mahocki )
 
+        dslop = dao.Load_LopALL()
 
-        session['socot15phut'] = int(dshocsinh['max15phut'])
-
-        session['socot1tiet'] = int(dshocsinh['max1tiet'])
-
-
-
-        print(f" 1t {session['socot1tiet'] } , 15phut {session['socot15phut']}")
-
-        session.modified =True
-
-        return render_template('nhapdiem.html', dshocsinh = dshocsinh['diemdshocsinh'] , **data)
-
-
+        return render_template('nhapdiem.html', dshocsinh = dshocsinh['diemdshocsinh'] , dslopcheckbox = dslop, **data)
 
 
     return redirect(url_for('index'))

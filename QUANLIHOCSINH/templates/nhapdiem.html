@@ -6,6 +6,7 @@
 
 {% block css %}
     <link rel="stylesheet" href="{{ url_for('static', filename = 'css/nhapdiem.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 {% endblock %}
 {% block content %}
@@ -20,7 +21,7 @@
                     </button>
                 </div>
                 <div>
-                    <button class="btn-save-infor-hocsinh" style="margin: 0">
+                    <button class="btn-save-infor-hocsinh" style="margin: 0" onclick="saveTableData()">
                         Lưu
                     </button>
                 </div>
@@ -32,7 +33,7 @@
                 <input type="text" id="lopLabel" name="lop" value= {{ lop }}>
                 <select name="dslop" onchange="updateLabel(this, 'lopLabel')">
                     <option value="">Lớp</option>
-                    {% for i in lop %}
+                    {% for i in dslopcheckbox %}
                         <option value="{{ i.TenLop }}">{{ i.TenLop }}</option>
                     {% endfor %}
                 </select>
@@ -49,8 +50,13 @@
                 <label for="namhoc">Năm học: </label>
                 <input type="text" id="namhoc" name="namhoc" value= {{ namhoc }}>
             </div>
+            <div style="margin: 20px auto;">
+                <button type="submit" class="btn-save-infor-hocsinh">Tìm kiếm</button>
+            </div>
         </form>
 
+        <p id="socot15phut" style="display:none"> {{ session.get('socot15phut') }}</p>
+        <p id="socot1tiet" style = "display: none"> {{ session.get('socot1tiet') }}</p>
 
         <table class="table table-striped custom-table" id="scoreTable">
             <thead>
@@ -93,37 +99,34 @@
             <tbody>
 
             {% for hs in dshocsinh %}
-                <tr>
+                <tr id= {{ hs['MaHocSinh'] }}>
                     <td>{{ loop.index }}</td>
                     <td>{{ hs['HoTen'].Ho }} {{ hs['HoTen'].Ten }}</td>
 
 
-                    {% if hs.get("15phut") %}
-                        {% for diem in hs.get('15phut') %}
-                            <td ><input type="text" value="{{ diem }}"></td>
-                        {% endfor %}
-                    {% else%}
-                        {% for i in range(1, session.get('socot15phut') + 1) %}
+                    {% for i in range(0, session.get('socot15phut')) %}
+                        {% if hs.get('15phut')[i] %}
+                            <td><input type="text" value="{{ hs.get('15phut')[i] }}"></td>
+                        {% else %}
                             <td><input type="text"></td>
-                        {% endfor %}
-                    {% endif %}
+                        {% endif %}
+
+                    {% endfor %}
 
 
-                    {% if hs.get("1tiet") %}
-                        {% for diem in hs.get('1tiet') %}
-                            <td><input type="text" value="{{ diem }}"></td>
-                        {% endfor %}
-                    {% else%}
-                        {% for i in range(1, session.get('socot1tiet') + 1) %}
+                    {% for i in range(0, session.get('socot1tiet')) %}
+                        {% if hs.get('1tiet')[i] %}
+                            <td><input type="text" value="{{ hs.get('1tiet')[i] }}"></td>
+                        {% else %}
                             <td><input type="text"></td>
-                        {% endfor %}
-                    {% endif %}
+                        {% endif %}
 
+                    {% endfor %}
 
                     {% if hs.get("diemthi") %}
-                            <td><input type="text" value="{{ hs.get('diemthi')[0] }}"></td>
-                    {% else%}
-                            <td class="score15"><input type="text"></td>
+                        <td><input type="text" value="{{ hs.get('diemthi')[0] }}"></td>
+                    {% else %}
+                        <td class="score15"><input type="text"></td>
                     {% endif %}
 
 
@@ -135,6 +138,47 @@
         </table>
 
         <script src={{ url_for('static', filename = 'js/nhapdiem.js') }}>
+        </script>
+
+        <script>
+            var socot15phut = parseInt(document.getElementById("socot15phut").textContent.trim());
+            var socot1tiet = parseInt(document.getElementById("socot1tiet").textContent.trim());
+
+            diemhocsinh = []
+
+            $('#scoreTable tr').each(function () {
+
+                var maHocSinh = $(this).attr("id");
+                var hoTen = $(this).find("td").eq(1).text().trim();
+
+                var diem15phut = [];
+                for (var i = 2; i < 2 + socot15phut; i++) {
+                    var diem = $(this).find("td").eq(i).find("input").val();
+                    diem15phut.push(diem);
+                }
+
+                var diem1tiet = [];
+                for (var i = 2 + socot15phut; i < 2 + socot15phut + socot1tiet; i++) {
+                    var diem = $(this).find("td").eq(i).find("input").val();
+                    diem1tiet.push(diem);
+                }
+
+                var diemthi = $(this).find("td").last().find("input").val();
+                if (!diemthi) {
+                    diemthi = "";
+                }
+
+
+                diemhocsinh.push({
+                    maHocSinh: maHocSinh,
+                    hoTen: hoTen,
+                    diem15phut: diem15phut,
+                    diem1tiet: diem1tiet,
+                    diemthi: diemthi
+                });
+            });
+
+            console.log(diemhocsinh);
 
 
         </script>
