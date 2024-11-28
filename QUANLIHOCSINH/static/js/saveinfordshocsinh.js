@@ -60,6 +60,8 @@ function SaveInforDshocsinh() {
 function RemoveHS(MaHocSinh, TenLop) {
 
 
+    alert(MaHocSinh , TenLop)
+
     fetch(`/user/dieuchinhdanhsachlop/removehocsinh/${TenLop}/${MaHocSinh}`, {
         method: 'post',
         headers: {

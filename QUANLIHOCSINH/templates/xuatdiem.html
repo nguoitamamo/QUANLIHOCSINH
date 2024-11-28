@@ -1,0 +1,130 @@
+{% extends 'layout/base.html' %}
+
+
+{% block title %} Nhập điểm {% endblock %}
+
+
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/nhapdiem.css') }}">
+
+{% endblock %}
+{% block content %}
+
+    <div class="container mt-3">
+        <div style="display: flex">
+            <h3>BẢNG ĐIỂM MÔN HỌC</h3>
+            <div class="btn_danhsachhs" style="display: flex; margin-left: auto;">
+                <div>
+                    <button class="btn-save-infor-hocsinh" style="margin: 0  ">
+                        Lưu tạm
+                    </button>
+                </div>
+                <div>
+                    <button class="btn-save-infor-hocsinh" style="margin: 0">
+                        Lưu
+                    </button>
+                </div>
+            </div>
+        </div>
+        <form action="{{ url_for('getinfolop') }}" method="POST" class="form-container">
+            <div class="form-row">
+                <label for="lopLabel">Lớp: </label>
+                <input type="text" id="lopLabel" name="lop">
+                <select name="dslop" onchange="updateLabel(this, 'lopLabel')">
+                    <option value="">Lớp</option>
+                    {% for i in lop %}
+                        <option value="{{ i.TenLop }}">{{ i.TenLop }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="monhocLabel">Môn học: </label>
+                <input type="text" id="monhocLabel" name="monhoc">
+                <select name="dsmonhoc" onchange="updateLabel(this, 'monhocLabel')">
+                    <option value="">Môn học</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label for="hocky">Học kỳ: </label>
+                <input type="text" id="hocky" name="hocky">
+                <label for="namhoc">Năm học: </label>
+                <input type="text" id="namhoc" name="namhoc">
+            </div>
+            <button type="submit">gửi</button>
+        </form>
+
+
+        <table class="table table-striped custom-table" id="scoreTable">
+            <thead>
+            <tr>
+                <th rowspan="2">STT</th>
+                <th rowspan="2">Họ tên</th>
+
+                <th colspan="{{ session.get('socot15phut') }}" id="score15Header" style="width: 20%;">
+                    Điểm 15 phút
+                    <button onclick="Column15phut('them')">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                    <button onclick="Column15phut('xoa')">
+                        <i class="fa-solid fa-minus"></i>
+                    </button>
+                </th>
+
+                <th colspan="{{ session.get('socot1tiet') }}" id="score1Header" style="width: 20%;">
+                    Điểm 1 tiết
+                    <button onclick="Column1tiet('them')">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                    <button onclick="Column1tiet('xoa')">
+                        <i class="fa-solid fa-minus"></i>
+                    </button>
+                </th>
+
+                <th rowspan="2">Điểm thi</th>
+            </tr>
+            <tr id="subHeader">
+                {% for i in range(1, session.get('socot15phut') + 1) %}
+                    <th class="score15" style="width: 10%;">{{ i }}</th>
+                {% endfor %}
+
+                {% for i in range(1, session.get('socot1tiet') + 1) %}
+                    <th class="score1" style="width: 10%;">{{ i }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+
+
+            {% for ma_lop, danh_sach_hoc_sinh in dshocsinh.items() %}
+                {% for hs in danh_sach_hoc_sinh %}
+                    <tr>
+                        <td>1</td>
+                        <td>{{ hs['HoTen'].Ho }} {{ hs['HoTen'].Ten }}</td>
+
+                        <!-- Hiển thị điểm 15 phút -->
+                        {% for diem in hs['15phut'] %}
+                            <td class="score15"><input type="text" value="{{ diem }}"></td>
+                        {% endfor %}
+
+                        <!-- Hiển thị điểm 1 tiết -->
+                        {% for diem in hs['1tiet'] %}
+                            <td class="score1"><input type="text" value="{{ diem }}"></td>
+                        {% endfor %}
+
+                        <!-- Hiển thị điểm cuối kì -->
+                        {% for diem in hs['diemthi'] %}
+                            <td><input type="text" value="{{ diem }}"></td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+
+            </tbody>
+        </table>
+
+        <script src={{ url_for('static', filename = 'js/nhapdiem.js') }}>
+
+
+        </script>
+    </div>
+
+{% endblock %}

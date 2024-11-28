@@ -66,8 +66,9 @@
 }
 
 .custom-table button {
-    border-radius: 30px;
+    border:none;
     width: 30px;
+    background: none;
 }
 
 .btn_custom {

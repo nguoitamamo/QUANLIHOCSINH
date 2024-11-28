@@ -95,6 +95,12 @@ def SaveIntoSession(dshocsinh):
     return dic
 
 
+# class UserInfor():
+#     def __init__(self):
+
+
+
+
 if __name__ == '__main__':
     with app.app_context():
         print(dataframe1)

@@ -132,7 +132,7 @@ class Hoc(db.Model):
     Ma = Column ( Integer, primary_key=True, autoincrement=True)
     MaLop = Column( String(20),ForeignKey('lop.MaLop'), nullable=False)
     MaMonHoc = Column(String(20), ForeignKey('monhoc.MaMonHoc'), nullable=False)
-    MaGiangVien = Column(String(20), ForeignKey('giangvien.MaGiangVien'), nullable=False)
+    MaGiangVien = Column(String(20), ForeignKey('giangvien.MaGiangVien'), nullable=False, unique=True)
     MaHocKi = Column(Integer, ForeignKey('hocki.MaHocKi'), nullable=False)
 
 
@@ -156,7 +156,7 @@ class HocKi(db.Model):
     __tablename__="hocki"
     MaHocKi = Column(Integer, primary_key=True, autoincrement=True)
     TenHocKi = Column(String(20), nullable=True)
-    NamHoc = Column(Integer, nullable=True)
+    NamHoc = Column(String(20), nullable=True)
     Diems = relationship('Diem', backref='hocki', lazy=False)
     Hocs = relationship('Hoc', backref='hocki', lazy=True)
 

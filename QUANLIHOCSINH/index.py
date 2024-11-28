@@ -1,3 +1,5 @@
+from openpyxl.styles.builtins import headline_1
+
 from QUANLIHOCSINH import app, login
 from flask import render_template, request, url_for, redirect, session, jsonify
 from flask_login import login_user, logout_user, current_user
@@ -18,7 +20,7 @@ def signin():
 
 @app.route('/signup')
 def signup():
-    return render_template('signup.html', flag="confirm", Permission=dao.Load_PermissionALL())
+    return render_template('signup.html')
 
 
 @app.route("/signin", methods=["POST", "GET"])
@@ -162,9 +164,11 @@ def lapdanhsachlop():
     else:
 
         solop = (dao.SoLop(app.config["MAX_SS_LOP"]))
+        print(solop)
 
     page = int(request.args.get('page', 1))
-    lophocsinh = dao.LoadLop(solop, page=page)
+    print(page)
+    lophocsinh = dao.LoadLop(ma = "10A" , key ="info",page=page)
 
     return render_template("lapdanhsachlop.html", lophocsinh=lophocsinh, solop=solop)
 
@@ -192,10 +196,7 @@ def nhapdiem():
 
     lop = dao.Load_LopALL()
 
-    monhocs = dao.LoadMonHocOfLop('10A1')
-    print(monhocs)
-
-    return render_template("nhapdiem.html", lop  = lop, monhocs=monhocs)
+    return render_template("nhapdiem.html", lop  = lop)
 
 @app.route('/user/nhapdiem/loadmon/<tenlop>', methods=["POST"])
 def loadmoninlop(tenlop):
@@ -204,17 +205,14 @@ def loadmoninlop(tenlop):
         monhocs = dao.LoadMonHocOfLop(tenlop)
 
         monhocs_list = [
-            {"TenMonHoc": dao.GetMonHocByMaMonHoc(mh.MaMonHoc).TenMonHoc } for mh in monhocs
+            {"TenMonHoc": dao.GetMonHoc(mh.MaMonHoc).TenMonHoc } for mh in monhocs
         ]
-        print(monhocs)
         print(monhocs_list)
-
-        print(request.args.get('monhocs',[]))
 
 
         return jsonify({
             "success": True,
-            "monhocs": monhocs_list
+            "dsmonhoc": monhocs_list
         })
 
     except Exception as e:
@@ -294,7 +292,7 @@ def dieuchinhdanhsachlop():
 
     page = int(request.args.get('page', 1))
 
-    lophocsinh = dao.LoadLop(solop, page=page)
+    lophocsinh = dao.LoadLop(ma = "10A", key = "info", page=page)
 
     dshocsinhnotlop = dao.HocSinhNotLop()
 
@@ -596,6 +594,41 @@ def removehs(tenlop, mahocsinh):
 
     except Exception as e:
         return jsonify({"success": False})
+
+
+@app.route('/user/nhapdiem/lop', methods=['POST'])
+def getinfolop():
+    if request.method == 'POST':
+
+        data = request.form.copy()
+
+        mamonhoc = dao.GetMonHoc(tenmonhoc = data['monhoc']).MaMonHoc
+
+        page = data['lop'][-1]
+
+
+        mahocki = dao.GetHocKi(tenhocki = data['hocky'] , namhoc = data['namhoc'].replace(" ", "")).MaHocKi
+
+
+        dshocsinh = dao.LoadLop( ma ='10A', key= "diem", mamonhoc = mamonhoc ,page = page , mahocki = mahocki )
+
+
+        session['socot15phut'] = int(dshocsinh['max15phut'])
+
+        session['socot1tiet'] = int(dshocsinh['max1tiet'])
+
+
+
+        print(f" 1t {session['socot1tiet'] } , 15phut {session['socot15phut']}")
+
+        session.modified =True
+
+        return render_template('nhapdiem.html', dshocsinh = dshocsinh['diemdshocsinh'] , **data)
+
+
+
+
+    return redirect(url_for('index'))
 
 
 @login.user_loader

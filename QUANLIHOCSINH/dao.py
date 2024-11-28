@@ -1,5 +1,4 @@
-
-from itertools import islice, count
+from itertools import count
 from math import ceil
 
 from sqlalchemy import func
@@ -10,7 +9,8 @@ import hashlib
 import cloudinary
 from cloudinary import uploader
 from datetime import datetime
-
+from enum import Enum
+from sqlalchemy import or_
 import random
 
 
@@ -42,11 +42,7 @@ def Check_Email(email):
 
 
 def UpdatePassAccount(email, passnew):
-
-
-
     acc = models.Account.query.filter(models.Account.id.__eq__(Check_Email(email).UserID)).first()
-
 
     if acc:
         pass_new_maHoa = hashlib.md5(passnew.encode('utf-8')).hexdigest()
@@ -88,11 +84,13 @@ def Get_MonHoc_By_TenMonHoc(TenMonHoc):
     monhoc = models.MonHoc.query.filter(models.MonHoc.TenMonHoc.__eq__(TenMonHoc)).first()
     return monhoc.MaMonHoc if monhoc else None
 
+
 def Check_Username_Exits(username):
     return models.Account.query.filter(models.Account.TenDangNhap.__eq__(username)).first()
 
 
-def Add_User(username, password, lastname, fristname, ngaysinh, gioitinh, diachi, email, permission, sdt: list[str] , monhoc = None, avatar =None):
+def Add_User(username, password, lastname, fristname, ngaysinh, gioitinh, diachi, email, permission, sdt: list[str],
+             monhoc=None, avatar=None):
     passwrd = str(hashlib.md5(password.strip().encode('utf-8')).hexdigest())
 
     idac = "HS" + str(Get_Cnt_Accout_Current()) + "_" + str(random.randint(10, 99))
@@ -102,17 +100,17 @@ def Add_User(username, password, lastname, fristname, ngaysinh, gioitinh, diachi
                           MatKhau=passwrd)
 
     if permission == "Giảng viên" and monhoc:
-        user.role= models.Role.GiangVien
-        giangvien= models.GiangVien(MaGiangVien = idac , MaMonHoc = Get_MonHoc_By_TenMonHoc (monhoc))
+        user.role = models.Role.GiangVien
+        giangvien = models.GiangVien(MaGiangVien=idac, MaMonHoc=Get_MonHoc_By_TenMonHoc(monhoc))
         db.session.add(giangvien)
 
     else:
         user.role = models.Role.NhanvienBoPhanKhac
 
-
     db.session.add(user)
 
-    inforuser = models.UserInfor(UserID=idac, Ho=lastname.strip(), Ten=fristname.strip(), NgaySinh=ngaysinh, GioiTinh=gioitinh,
+    inforuser = models.UserInfor(UserID=idac, Ho=lastname.strip(), Ten=fristname.strip(), NgaySinh=ngaysinh,
+                                 GioiTinh=gioitinh,
                                  DiaChi=diachi.strip(), Email=email.strip())
 
     if avatar:
@@ -121,15 +119,12 @@ def Add_User(username, password, lastname, fristname, ngaysinh, gioitinh, diachi
 
     db.session.add(inforuser)
 
-
-
     if sdt:
         for i in sdt:
             phone = models.Phone(Number=str(i), UserID=idac)
             db.session.add(phone)
 
     db.session.commit()
-
 
 
 def ActiveAccount(id):
@@ -166,19 +161,20 @@ def LoadEmailConfirm(value):
     return models.Token.query.filter(models.Token.Value.__eq__(value)).first().Email
 
 
-def add_HocSinh(diemTbDauVao, firstname, lastname, ngaysinh, gioitinh, diachi, email,sdt =None,  avatar =None):
-
-    idac = "HS" + str(Get_Cnt_Accout_Current()) + "_"  + str(random.randint(10,99))
+def add_HocSinh(diemTbDauVao, firstname, lastname, ngaysinh, gioitinh, diachi, email, sdt=None, avatar=None):
+    idac = "HS" + str(Get_Cnt_Accout_Current()) + "_" + str(random.randint(10, 99))
 
     hocsinh = models.HocSinh(MaHocSinh=idac, DiemTbDauVao=diemTbDauVao)
     db.session.add(hocsinh)
 
     password_hash = hashlib.md5(idac.encode('utf-8')).hexdigest()
 
-    accoutHocSinh = models.Account(id=idac, TenDangNhap="HocSinh" + str(idac), MatKhau=password_hash ,role = models.Role.HocSinh)
+    accoutHocSinh = models.Account(id=idac, TenDangNhap="HocSinh" + str(idac), MatKhau=password_hash,
+                                   role=models.Role.HocSinh)
     db.session.add(accoutHocSinh)
 
-    inforHocSinh = models.UserInfor(UserID=idac, Ho=firstname, Ten=lastname, NgaySinh=ngaysinh, GioiTinh=gioitinh, DiaChi=diachi,
+    inforHocSinh = models.UserInfor(UserID=idac, Ho=firstname, Ten=lastname, NgaySinh=ngaysinh, GioiTinh=gioitinh,
+                                    DiaChi=diachi,
                                     Email=email)
 
     if avatar:
@@ -191,7 +187,6 @@ def add_HocSinh(diemTbDauVao, firstname, lastname, ngaysinh, gioitinh, diachi, e
         for i in sdt:
             phone = models.Phone(Number=str(i), UserID=idac)
             db.session.add(phone)
-
 
     db.session.commit()
 
@@ -211,7 +206,7 @@ def Cnt_Sum_Lop(khoi):
     return db.session.query(func.count(models.Lop.MaKhoi)).filter(models.Khoi.MaKhoi.__eq__(khoi)).scalar()
 
 
-def HocSinhNotLop(tb= None):
+def HocSinhNotLop(tb=None):
     if tb:
         HocSinhNotLop = db.session.query(models.HocSinh).filter(models.HocSinh.MaHocSinh.notin_(
             db.session.query(models.LopHocSinh.MaHocSinh)
@@ -221,8 +216,7 @@ def HocSinhNotLop(tb= None):
             db.session.query(models.LopHocSinh.MaHocSinh)
         )).order_by(models.HocSinh.DiemTbDauVao.desc()).all()
 
-
-        HocSinhNotLop = [LoadHSLopInfo(hs.MaHocSinh) for hs in HocSinhNotLop]
+        HocSinhNotLop = [LoadHSinfo(hs.MaHocSinh, key="info") for hs in HocSinhNotLop]
 
     return HocSinhNotLop
 
@@ -231,18 +225,17 @@ def Get_Sum_HS_Lop(malop):
     return db.session.query(func.count(models.LopHocSinh.MaHocSinh)).filter(
         models.LopHocSinh.MaLop.__eq__(malop)).scalar()
 
-def UpdateSiSo(MaLop, SiSo):
 
+def UpdateSiSo(MaLop, SiSo):
     lop = db.session.query(models.Lop).filter(models.Lop.MaLop == MaLop).first()
 
     if lop:
-        si_so = db.session.query(func.count(models.LopHocSinh.MaHocSinh)).filter(models.LopHocSinh.MaLop == MaLop).scalar()
+        si_so = db.session.query(func.count(models.LopHocSinh.MaHocSinh)).filter(
+            models.LopHocSinh.MaLop == MaLop).scalar()
 
         lop.SiSo = SiSo
 
         db.session.commit()
-
-
 
 
 def Insert_HS_Remain(sohocsinhconlai, solopcanchia, tb, remaining):
@@ -255,13 +248,15 @@ def Insert_HS_Remain(sohocsinhconlai, solopcanchia, tb, remaining):
 
     if len(remaining) >= condition:
         for i in range(1, condition + 1):
-            lophocsinh = models.LopHocSinh(MaLop="L10A" + str(solopcanchia), MaHocSinh=remaining[i - 1].MaHocSinh, NamTaoLop = "2024")
+            lophocsinh = models.LopHocSinh(MaLop="L10A" + str(solopcanchia), MaHocSinh=remaining[i - 1].MaHocSinh,
+                                           NamTaoLop="2024")
             UpdateSiSo(MaLop="L10A" + str(solopcanchia), SiSo=siso)
             db.session.add(lophocsinh)
     else:
         for i in range(1, len(remaining) + 1):
-            lophocsinh = models.LopHocSinh(MaLop="L10A" + str(solopcanchia), MaHocSinh=remaining[i - 1].MaHocSinh, NamTaoLop = "2024")
-            UpdateSiSo(MaLop="L10A" + str(solopcanchia) , SiSo = int(tb + len(remaining)))
+            lophocsinh = models.LopHocSinh(MaLop="L10A" + str(solopcanchia), MaHocSinh=remaining[i - 1].MaHocSinh,
+                                           NamTaoLop="2024")
+            UpdateSiSo(MaLop="L10A" + str(solopcanchia), SiSo=int(tb + len(remaining)))
             db.session.add(lophocsinh)
 
     db.session.commit()
@@ -285,7 +280,7 @@ def Division_Class(solopcanchia):
 
         HocSinh = HocSinhNotLop(int(tb))
         for j in HocSinh:
-            lophocsinh = models.LopHocSinh(MaLop="L10A" + str(i), MaHocSinh=j.MaHocSinh, NamTaoLop = "2024")
+            lophocsinh = models.LopHocSinh(MaLop="L10A" + str(i), MaHocSinh=j.MaHocSinh, NamTaoLop="2024")
             db.session.add(lophocsinh)
 
         db.session.commit()
@@ -299,8 +294,8 @@ def Division_Class(solopcanchia):
 def GetPerMissionByValue(value):
     return models.Permission.query.filter(models.Permission.Value.__eq__(value)).first().PermissionID
 
-def GetPerMission(id = None , value = None):
 
+def GetPerMission(id=None, value=None):
     if id:
         return models.Permission.query.filter(models.Permission.PermissionID.__eq__(id)).first()
     if value:
@@ -310,23 +305,36 @@ def GetPerMission(id = None , value = None):
 def GetUserNameByID(username):
     return models.Account.query.filter(models.Account.TenDangNhap.__eq__(username)).first().id
 
+
 def GetLopByTen(tenLop):
-    return db.session.query(models.Lop.TenLop , models.Lop.SiSo,models.Lop.MaLop ).filter(models.Lop.TenLop == tenLop).first()
+    return db.session.query(models.Lop.TenLop, models.Lop.SiSo, models.Lop.MaLop).filter(
+        models.Lop.TenLop == tenLop).first()
 
 
-def GetMonHocByMaMonHoc(mamonhoc):
-    return db.session.query(models.MonHoc.TenMonHoc, models.MonHoc.MaMonHoc).filter(models.MonHoc.MaMonHoc == mamonhoc).first()
+def GetMonHoc(mamonhoc=None, tenmonhoc=None):
+    return (
+        db.session.query(models.MonHoc.TenMonHoc, models.MonHoc.MaMonHoc)
+        .filter(
+            or_(
+                models.MonHoc.MaMonHoc == mamonhoc,
+                models.MonHoc.TenMonHoc == tenmonhoc
+            )
+        )
+        .first()
+    )
 
+
+def GetHocKi(tenhocki, namhoc):
+    return db.session.query(models.HocKi.MaHocKi).filter(models.HocKi.TenHocKi == tenhocki,
+                                                         models.HocKi.NamHoc == namhoc).first()
 
 
 def CheckPermissionUserExit(permissionid, userid):
     return models.PermissionUser.query.filter(models.PermissionUser.PermissionID == permissionid,
-                                                          models.PermissionUser.UserID == userid).first()
-
+                                              models.PermissionUser.UserID == userid).first()
 
 
 def AddPermissionUser(permissionid, userid):
-
     if not CheckPermissionUserExit(permissionid, userid):
         perrmissionuser = models.PermissionUser(PermissionID=permissionid, UserID=userid)
         db.session.add(perrmissionuser)
@@ -336,39 +344,103 @@ def AddPermissionUser(permissionid, userid):
     return False
 
 
+def GetUserInforByUserID(userid):
+    return db.session.query(models.UserInfor.Ho, models.UserInfor.Ten).filter(models.UserInfor.UserID == userid).first()
 
-def CheckAdmin(AdminID):
-    return models.Admin.query.filter_by(AdminID=AdminID).first()
+
+class TypeDiem(Enum):
+    PHUT15 = "15 phút"
+    TIET1 = "1 tiết"
+    CUOIKI = "cuối kì"
 
 
-def LoadLop(solop , page = 1):
-
+def LoadLop(ma, key, page, mamonhoc=None, mahocki=None):
     lop_hocsinh = {}
 
-    for i in range(1, solop + 1):
-        hocsinh = (db.session.query(models.LopHocSinh.MaLop, models.LopHocSinh.MaHocSinh)
-                       .join(models.HocSinh, models.HocSinh.MaHocSinh == models.LopHocSinh.MaHocSinh)
-                       .filter(models.LopHocSinh.MaLop == "L10A" + str(i))
-                       .all())
-        lop_hocsinh["10A" + str(i)] = [LoadHSLopInfo(hs.MaHocSinh) for hs in hocsinh]
+    hocsinh = (db.session.query(models.LopHocSinh.MaLop, models.LopHocSinh.MaHocSinh)
+               .join(models.HocSinh, models.HocSinh.MaHocSinh == models.LopHocSinh.MaHocSinh)
+               .filter(models.LopHocSinh.MaLop == 'L' + ma + str(page))
+               .all())
+
+    if key == "info":
+        lop_hocsinh[ma + str(page)] = [LoadHSinfo(mahocsinh=hs.MaHocSinh, key="info") for hs in hocsinh]
+        return lop_hocsinh
+    if key == "diem" and mamonhoc:
+
+        max15phut = 0
+        max1tiet = 0
+
+        diemdshocsinh = []
+        for hs in hocsinh:
+            hs_diem = {
+                "HoTen": GetUserInforByUserID(hs.MaHocSinh),
+                **LoadHSinfo(hs.MaHocSinh, key="diem", typediem=TypeDiem, mamonhoc=mamonhoc, mahocki=mahocki)
+            }
+            diemdshocsinh.append(hs_diem)
+
+            max15phut = max(max15phut, len(hs_diem['15phut']))
+            max1tiet = max(max1tiet, len(hs_diem['1tiet']))
+
+        return {
+            "diemdshocsinh": diemdshocsinh,
+            "max15phut": max15phut,
+            "max1tiet": max1tiet
+        }
 
 
-    page_size = app.config["PAGE_SIZE"]
-    start = (page - 1) * page_size
-    end = start + page_size
+def LoadHSinfo(mahocsinh, key, typediem=TypeDiem, mamonhoc=None, mahocki=None):
+    if key == "info":
+        inforhocsinh = (db.session.query(models.UserInfor.UserID, models.UserInfor.Ho, models.UserInfor.Ten,
+                                         models.HocSinh.DiemTbDauVao, models.UserInfor.GioiTinh,
+                                         models.UserInfor.NgaySinh, models.UserInfor.DiaChi)
+                        .join(models.Account, models.Account.id == models.UserInfor.UserID)
+                        .join(models.HocSinh, models.HocSinh.MaHocSinh == models.Account.id)
+                        .filter(models.UserInfor.UserID == mahocsinh)
+                        .all())
+        return inforhocsinh
 
-    paginated_lop_hocsinh = dict(islice(lop_hocsinh.items(), start, end))
+    if key == "diem" and typediem:
 
-    return paginated_lop_hocsinh
+        diem15phut = []
+        diem1tiet = []
+        cuoiki = []
 
-def LoadHSLopInfo(mahocsinh):
-    inforhocsinh = (db.session.query(models.UserInfor.UserID,models.UserInfor.Ho , models.UserInfor.Ten , models.HocSinh.DiemTbDauVao, models.UserInfor.GioiTinh, models.UserInfor.NgaySinh, models.UserInfor.DiaChi)
-                    .join( models.Account, models.Account.id == models.UserInfor.UserID)
-                    .join( models.HocSinh, models.HocSinh.MaHocSinh == models.Account.id)
-                    .filter(models.UserInfor.UserID == mahocsinh)
-                    .all())
+        inforhocsinh = (db.session.query(models.HocSinh.MaHocSinh, models.Diem.TypeDiem, models.Diem.SoDiem,
+                                         models.Diem.MaMonHoc, models.Diem.MaHocKi)
+                        .join(models.Diem, models.HocSinh.MaHocSinh == models.Diem.MaHocSinh)
+                        .filter(models.HocSinh.MaHocSinh == mahocsinh, models.Diem.TypeDiem.in_([TypeDiem.PHUT15.value,
+                                                                                                 TypeDiem.TIET1.value,
+                                                                                                 TypeDiem.CUOIKI.value]),
+                                models.Diem.MaMonHoc == mamonhoc,
+                                models.Diem.MaHocKi == mahocki)
+                        .all())
 
-    return inforhocsinh
+        for diem in inforhocsinh:
+            if diem.TypeDiem == TypeDiem.PHUT15.value:
+                diem15phut.append(diem.SoDiem)
+            elif diem.TypeDiem == TypeDiem.TIET1.value:
+                diem1tiet.append(diem.SoDiem)
+            elif diem.TypeDiem == TypeDiem.CUOIKI.value:
+                cuoiki.append(diem.SoDiem)
+
+        return {
+            "15phut": diem15phut,
+            "1tiet": diem1tiet,
+            "diemthi": cuoiki
+        }
+
+    return None
+
+
+#
+# def LoadHSinfo(mahocsinh, key="diem"):
+#     inforhocsinh = (db.session.query(models.HocSinh.MaHocSinh, models.Diem.TypeDiem, models.Diem.SoDiem,
+#                                      models.Diem.MaMonHoc, models.Diem.MaHocKi)
+#                     .join(models.Diem, models.HocSinh.MaHocSinh == models.Diem.MaHocSinh)
+#                     .filter(models.HocSinh.MaHocSinh == mahocsinh)
+#                     .all())
+#
+#     return inforhocsinh
 
 
 def removeHocSinh(malop, mahocsinh):
@@ -384,18 +456,14 @@ def removeHocSinh(malop, mahocsinh):
     return False
 
 
-
-
 def CheckHocSinhExitsLop(mahocsinh, malop):
     return models.LopHocSinh.query.filter(models.LopHocSinh.MaHocSinh == mahocsinh,
-                                                          models.LopHocSinh.MaLop == malop).first()
-
+                                          models.LopHocSinh.MaLop == malop).first()
 
 
 def addHocSinhToLop(mahocsinh, malop):
-
     currentyear = str(datetime.now().year)
-    lophocsinh = models.LopHocSinh ( MaHocSinh = mahocsinh, MaLop = malop, NamTaoLop = currentyear )
+    lophocsinh = models.LopHocSinh(MaHocSinh=mahocsinh, MaLop=malop, NamTaoLop=currentyear)
     db.session.add(lophocsinh)
     db.session.commit()
     return True
@@ -403,45 +471,47 @@ def addHocSinhToLop(mahocsinh, malop):
 
 def SoLop(maxsslop):
     currentyear = str(datetime.now().year)
-    return  ceil(( db.session.query( models.LopHocSinh.NamTaoLop == currentyear).count() ) / maxsslop )
+    return ceil((db.session.query(models.LopHocSinh.NamTaoLop == currentyear).count()) / maxsslop)
 
 
 def Solop1(maxsslop):
     currentyear = str(datetime.now().year)
-    return  ( db.session.query( models.LopHocSinh.NamTaoLop == currentyear).count() ) / maxsslop
+    return (db.session.query(models.LopHocSinh.NamTaoLop == currentyear).count()) / maxsslop
+
 
 def LoadMonHocOfLop(tenlop):
     malop = GetLopByTen(tenlop).MaLop
-    print(malop)
+
     if not malop:
         return []
 
     return (db.session.query(models.Hoc.MaLop, models.Hoc.MaMonHoc, models.Hoc.MaHocKi)
-        .filter(models.Hoc.MaLop == malop)
-        .all())
+            .filter(models.Hoc.MaLop == malop)
+            .all())
 
 
+Ho = ["Phan", "Ly", "Thanh", "La", "Hoang"]
+Ten = ["Trung", "Trinh", "A", "D", "E", "G", "B"]
 
-Ho = [ "Phan", "Ly", "Thanh", "La" , "Hoang"]
-Ten =["Trung", "Trinh", "A", "D", "E", "G", "B"]
 
 def them():
-    for i in range(1,425 ):
+    for i in range(1, 425):
         idac = "HS" + str(Get_Cnt_Accout_Current()) + "_" + str(random.randint(10, 99))
-        hocsinh = models.HocSinh(MaHocSinh = idac , DiemTbDauVao = float(random.randint(1,10)))
+        hocsinh = models.HocSinh(MaHocSinh=idac, DiemTbDauVao=float(random.randint(1, 10)))
         db.session.add(hocsinh)
 
         password_hash = hashlib.md5(str(i).encode('utf-8')).hexdigest()
 
-        accoutHocSinh = models.Account(id= idac , TenDangNhap="HocSinhmoi" + str(i), MatKhau=password_hash, role= models.Role.HocSinh)
+        accoutHocSinh = models.Account(id=idac, TenDangNhap="HocSinhmoi" + str(i), MatKhau=password_hash,
+                                       role=models.Role.HocSinh)
         db.session.add(accoutHocSinh)
 
-        inforHocSinh = models.UserInfor(UserID=idac, Ho=Ho[(i%5)], Ten=Ten[(i%7)], NgaySinh="2008-11-12", GioiTinh="Nam",DiaChi="Bình định", Email="test" + str(i) + "@gmail.com", Image=None)
+        inforHocSinh = models.UserInfor(UserID=idac, Ho=Ho[(i % 5)], Ten=Ten[(i % 7)], NgaySinh="2008-11-12",
+                                        GioiTinh="Nam", DiaChi="Bình định", Email="test" + str(i) + "@gmail.com",
+                                        Image=None)
         db.session.add(inforHocSinh)
 
         db.session.commit()
-
-
 
 
 # c
@@ -453,13 +523,40 @@ def them():
 
 if __name__ == '__main__':
     with app.app_context():
-        # lop_hocsinh = LoadLop(11,1)
-        # for ma_lop, danh_sach_hoc_sinh in lop_hocsinh.items():
-        #     print(f"Lớp: {ma_lop}")
-        #     for hs in danh_sach_hoc_sinh:
-        #         for info in hs:
-        #             print(
-        #                 f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
+        lop_hocsinh = LoadLop(ma="10A", key="diem", mamonhoc = 'MH1', page=5, mahocki=1)
+
+
+        if lop_hocsinh and 'diemdshocsinh' in lop_hocsinh:
+            for hs in lop_hocsinh['diemdshocsinh']:
+                print(f"Họ tên: {hs['HoTen']}")
+
+                for i in hs.get('15phut', []):
+                    print(f"Điểm 15 phút: {i}")
+
+                for i in hs.get('1tiet', []):
+                    print(f"Điểm 1 tiết: {i}")
+
+                for i in hs.get('diemthi', []):
+                    print(f"Điểm cuối kỳ: {i}")
+
+
+            print(f"Max 15 phút: {lop_hocsinh['max15phut']}")
+            print(f"Max 1 tiết: {lop_hocsinh['max1tiet']}")
+        else:
+            print("Không có dữ liệu học sinh.")
+
+            # # In ra thông tin
+            # print(f"Họ tên: {ho_ten['Ho']} {ho_ten['Ten']}")
+            # print("Điểm 15 phút:", diem_15phut)
+            # print("Điểm 1 tiết:", diem_1tiet)
+            # print("Điểm cuối kỳ:", diem_cuoiki)
+            # print("-" * 20)
+
+        # for info in hs:
+        #     # print(
+        #         # f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
+        #
+        #     print(f"Họ: {info.HoTen},  MaHocSinh: {info.MaHocSinh} , Điểm: {info.SoDiem}, Loại điểm : {info.TypeDiem} ")
         # dshocsinh = HocSinhNotLop()
         #
         # for i in dshocsinh:
@@ -467,7 +564,23 @@ if __name__ == '__main__':
         #         print(
         #             f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Điểm: {info.DiemTbDauVao} Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
 
-            # print(Solop1(40))
+        # print(Solop1(40))
         # print(LoadMonHocOfLop('10A1'))
         # print(GetLopByID('L' + '10A1').MaLop)
-        print( LoadMonHocOfLop('10A1'))
+
+        # for i in LoadHSinfo('HS0_92', key = "diem" ):
+        #     print(i)
+
+        # print(LoadHSinfo('HS0_92' , key = "info"))
+
+        # print(GetMonHoc(mamonhoc = 'MH1').TenMonHoc)
+        # for ten_lop, danh_sach_hoc_sinh in lop_hocsinh.items():
+        #
+        #     print(f"Lớp: {ten_lop}")
+        #
+        #     for hs in danh_sach_hoc_sinh:
+        #         for info in hs:
+        #             print(
+        #                          f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
+        #
+        # #
