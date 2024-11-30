@@ -268,15 +268,6 @@
     </div>
 
 
-    {% block js %}
-        <script>
-            document.getElementById('btn_upload_dshocsinh').addEventListener('click', function (event) {
-                const permission_giangvien = document.getElementById('div_danhsachhocsinh').style.display = "block"
-            });
-
-
-        </script>
-    {% endblock %}
 
     <script src="{{ url_for('static', filename='js/add_phone.js') }}"></script>
     <script src="{{ url_for('static', filename='js/saveinfordshocsinh.js') }}"></script>

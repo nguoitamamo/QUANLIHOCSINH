@@ -7,26 +7,56 @@
 {% block css %}
     <link rel="stylesheet" href="{{ url_for('static', filename = 'css/nhapdiem.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+    .stt {
 
+        width: 50px;
+    }
+    .hoten {
+        width: 300px;
+    }
+    .cot15phut {
+        width: 100px;
+    }
+    .cot1tiet {
+        width: 100px;
+    }
+    table + div {
+        margin:0;
+    }
+    </style>
 {% endblock %}
 {% block content %}
 
+
+
     <div class="container mt-3">
-        <div style="display: flex">
-            <h3>BẢNG ĐIỂM MÔN HỌC</h3>
-            <div class="btn_danhsachhs" style="display: flex; margin-left: auto;">
-                <div>
-                    <button class="btn-save-infor-hocsinh" style="margin: 0" onclick="saveTableData('tam')">
-                        Lưu tạm
-                    </button>
-                </div>
-                <div>
-                    <button class="btn-save-infor-hocsinh" style="margin: 0" onclick="saveTableData('luu')">
-                        Lưu
-                    </button>
-                </div>
+
+
+        <div class="container col-5 mt-3">
+            <div class="alert alert-danger alert-dismissible" style="display: none">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <strong id="error"></strong>
             </div>
         </div>
+        <form action="{{ url_for("findhocsinh") }}" method="post">
+            <div style="display: flex">
+                <h3 style="flex: 1">BẢNG ĐIỂM MÔN HỌC</h3>
+
+                <input type="text" name="lop" autocomplete="off" style="flex: 0.6 ; border-radius: 15px"
+                       placeholder="Tìm kiếm học sinh....">
+
+                <div>
+                    <ul id="suggestionHocSinh"></ul>
+                </div>
+
+                <button class="btn-save-infor-hocsinh" type="submit">
+                    Tìm kiếm
+                </button>
+
+            </div>
+        </form>
+
         <form action="{{ url_for('getinfolop') }}" method="POST" class="form-container">
             <div class="form-row">
                 <label for="lopLabel">Lớp: </label>
@@ -36,7 +66,7 @@
                 <div>
                     <ul id="suggestionLop"></ul>
                 </div>
-                <select name="dslop"  id = "dslop" onclick="updateLabel(this, 'lopLabel')">
+                <select name="dslop" id="dslop" onclick="updateLabel(this, 'lopLabel')">
                     <option value="">Lớp</option>
                     {% for i in dslopcheckbox %}
                         <option value="{{ i.MaLop }}">{{ i.TenLop }}</option>
@@ -44,8 +74,8 @@
                 </select>
                 <label for="monhocLabel">Môn học: </label>
                 <input type="text" id="monhocLabel" name="monhoc" autocomplete="off"
-{#                        onkeyup="Suggestion('monhoc')"#}
-                        value= {{ monhoc }}>
+                        {# onkeyup="Suggestion('monhoc')" #}
+                       value={{ monhoc }}>
                 <div>
                     <ul id="suggestionMonHoc"></ul>
                 </div>
@@ -55,99 +85,106 @@
             </div>
             <div class="form-row">
                 <label for="hocky">Học kỳ: </label>
-                <input type="text" id="hocky" name="hocky" value= {{ hocky }}>
+                <input type="text" id="hocky" name="hocky" value={{ hocky }}>
                 <label for="namhoc">Năm học: </label>
-                <input type="text" id="namhoc" name="namhoc" value= {{ namhoc }}>
+                <input type="text" id="namhoc" name="namhoc" value={{ namhoc }}>
             </div>
-            <div style="margin: 20px auto;">
-                <button type="submit" class="btn-save-infor-hocsinh">Tìm kiếm</button>
-            </div>
+            <button type="submit" class="btn-save-infor-hocsinh">Tìm kiếm</button>
+
         </form>
+
+        <div style="margin-bottom: 15px; text-align: right">
+            <button class="btn-save-infor-hocsinh" onclick="saveTableData('tam')">
+                Lưu tạm
+            </button>
+            <button class="btn-save-infor-hocsinh" onclick="saveTableData('luu')">
+                Lưu
+            </button>
+        </div>
 
         <p id="socot15phut" style="display:none"> {{ session.get('socot15phut') }}</p>
         <p id="socot1tiet" style="display: none"> {{ session.get('socot1tiet') }}</p>
 
-        <table class="table table-striped custom-table" id="scoreTable">
-            <thead>
-            <tr>
-                <th rowspan="2">STT</th>
-                <th rowspan="2">Họ tên</th>
+        <div style="width: 100%; overflow-x: auto;">
+            <table class="table table-striped custom-table" id="scoreTable"
+                   style="width: 100%; border-collapse: collapse; margin-bottom: 0" >
+                <thead>
+                <tr>
+                    <th rowspan="2" class ="stt">STT</th>
+                    <th rowspan="2" class ="hoten">Họ tên</th>
 
-                <th colspan="{{ session.get('socot15phut') }}" id="score15Header" style="width: 20%;">
-                    Điểm 15 phút
-                    <button onclick="Column15phut('them')">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                    <button onclick="Column15phut('xoa')">
-                        <i class="fa-solid fa-minus"></i>
-                    </button>
-                </th>
+                    <th colspan="{{ session.get('socot15phut') }}" class ="cot15phut" id="score15Header" >
+                        Điểm 15 phút
+                        <button onclick="Column15phut('them')">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                        <button onclick="Column15phut('xoa')">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                    </th>
 
-                <th colspan="{{ session.get('socot1tiet') }}" id="score1Header" style="width: 20%;">
-                    Điểm 1 tiết
-                    <button onclick="Column1tiet('them')">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                    <button onclick="Column1tiet('xoa')">
-                        <i class="fa-solid fa-minus"></i>
-                    </button>
-                </th>
+                    <th colspan="{{ session.get('socot1tiet') }}" class ="cot1tiet" id="score1Header">
+                        Điểm 1 tiết
+                        <button onclick="Column1tiet('them')">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                        <button onclick="Column1tiet('xoa')">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                    </th>
 
-                <th rowspan="2">Điểm thi</th>
-            </tr>
-            <tr id="subHeader">
-                {% for i in range(1, session.get('socot15phut') + 1) %}
-                    <th class="score15" style="width: 10%;">{{ i }}</th>
-                {% endfor %}
-
-                {% for i in range(1, session.get('socot1tiet') + 1) %}
-                    <th class="score1" style="width: 10%;">{{ i }}</th>
-                {% endfor %}
-            </tr>
-            </thead>
-            <tbody>
-
-            {% for hs in dshocsinh %}
-                <tr id= {{ hs['MaHocSinh'] }}>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ hs['HoTen'].Ho }} {{ hs['HoTen'].Ten }}</td>
-
-
-                    {% for i in range(0, session.get('socot15phut')) %}
-                        {% if hs.get('15phut')[i] %}
-                            <td><input type="text" value="{{ hs.get('15phut')[i] }}"></td>
-                        {% else %}
-                            <td><input type="text"></td>
-                        {% endif %}
-
-                    {% endfor %}
-
-
-                    {% for i in range(0, session.get('socot1tiet')) %}
-                        {% if hs.get('1tiet')[i] %}
-                            <td><input type="text" value="{{ hs.get('1tiet')[i] }}"></td>
-                        {% else %}
-                            <td><input type="text"></td>
-                        {% endif %}
-
-                    {% endfor %}
-
-                    {% if hs.get("diemthi") %}
-                        <td><input type="text" value="{{ hs.get('diemthi')[0] }}"></td>
-                    {% else %}
-                        <td class="score15"><input type="text"></td>
-                    {% endif %}
-
-
+                    <th rowspan="2" class = "diemthi">Điểm thi</th>
                 </tr>
+                <tr id="subHeader">
+                    {% for i in range(1, session.get('socot15phut') + 1) %}
+                        <th class="score15 cot15phut" >{{ i }}</th>
+                    {% endfor %}
 
-            {% endfor %}
+                    {% for i in range(1, session.get('socot1tiet') + 1) %}
+                        <th class="score1 cot1tiet" >{{ i }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+            </table>
 
-            </tbody>
-        </table>
+            <div style="height: 450px; overflow-y: auto; margin-bottom: 50px">
+                <table id = "scoreTable" class="table table-striped custom-table" style="width: 100%; border-collapse: collapse; margin-bottom: 0px;">
+                    <tbody>
+                    {% for hs in dshocsinh %}
+                        <tr id={{ hs['MaHocSinh'] }}>
+                            <td class ="stt">{{ loop.index }}</td>
+                            <td class ="hoten">{{ hs['HoTen'] }}</td>
 
-        <script src={{ url_for('static', filename = 'js/nhapdiem.js') }}>
-        </script>
+                            {% for i in range(0, session.get('socot15phut')) %}
+                                {% if hs.get('15phut')[i] %}
+                                    <td class ="cot15phut" ><input type="text" value="{{ hs.get('15phut')[i] }}"></td>
+                                {% else %}
+                                    <td class ="cot15phut"><input type="text"></td>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% for i in range(0, session.get('socot1tiet')) %}
+                                {% if hs.get('1tiet')[i] %}
+                                    <td class ="cot1tiet"><input type="text" value="{{ hs.get('1tiet')[i] }}"></td>
+                                {% else %}
+                                    <td class ="cot1tiet"><input type="text"></td>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if hs.get("diemthi") %}
+                                <td class = "diemthi"><input type="text" value="{{ hs.get('diemthi')[0] }}"></td>
+                            {% else %}
+                                <td class="score15 diemthi"><input type="text"></td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <script src={{ url_for('static', filename = 'js/nhapdiem.js') }}></script>
 
     </div>
 

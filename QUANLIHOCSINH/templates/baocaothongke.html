@@ -1,20 +1,195 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Suggestion</title>
+{% extends 'layout/base.html' %}
+
+{% block css %}
     <style>
+        /* Đặt các bảng có chiều rộng bằng nhau */
+        #scoreTable {
+            width: 100%;
+            table-layout: fixed; /* Đảm bảo các cột có chiều rộng cố định */
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .custom-table {
+            width: 100%;
+        }
+
+        /* Xử lý nút thêm và xóa cột */
+        button {
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        button i {
+            font-size: 14px;
+            color: #007bff;
+        }
 
     </style>
-</head>
-<body>
-    <h1>Gợi ý tìm kiếm lớp học</h1>
-    <input type="text" id="searchInput" placeholder="Nhập tên lớp..." autocomplete="off">
+
+{% endblock %}
+{% block content %}
+<div style="width: 100%; overflow-x: auto;">
+    <table class="table table-striped custom-table" id="scoreTable"
+           style="width: 100%; border-collapse: collapse;">
+        <thead>
+        <tr>
+            <th rowspan="2">STT</th>
+            <th rowspan="2">Họ tên</th>
+
+            <th colspan="{{ session.get('socot15phut') }}" id="score15Header" style="width: 20%;">
+                Điểm 15 phút
+                <button onclick="Column15phut('them')">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+                <button onclick="Column15phut('xoa')">
+                    <i class="fa-solid fa-minus"></i>
+                </button>
+            </th>
+
+            <th colspan="{{ session.get('socot1tiet') }}" id="score1Header" style="width: 20%;">
+                Điểm 1 tiết
+                <button onclick="Column1tiet('them')">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+                <button onclick="Column1tiet('xoa')">
+                    <i class="fa-solid fa-minus"></i>
+                </button>
+            </th>
+
+            <th rowspan="2">Điểm thi</th>
+        </tr>
+        <tr id="subHeader">
+            {% for i in range(1, session.get('socot15phut') + 1) %}
+                <th class="score15" style="width: 10%;">{{ i }}</th>
+            {% endfor %}
+
+            {% for i in range(1, session.get('socot1tiet') + 1) %}
+                <th class="score1" style="width: 10%;">{{ i }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+    </table>
+
+    <div style="height: 450px; overflow-y: auto; margin-bottom: 50px">
+        <table id="scoreTable" class="table table-striped custom-table" style="width: 100%; border-collapse: collapse;">
+            <tbody>
+            {% for hs in dshocsinh %}
+                <tr id={{ hs['MaHocSinh'] }}>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ hs['HoTen'].Ho }} {{ hs['HoTen'].Ten }}</td>
+
+                    {% for i in range(0, session.get('socot15phut')) %}
+                        {% if hs.get('15phut')[i] %}
+                            <td><input type="text" value="{{ hs.get('15phut')[i] }}"></td>
+                        {% else %}
+                            <td><input type="text"></td>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for i in range(0, session.get('socot1tiet')) %}
+                        {% if hs.get('1tiet')[i] %}
+                            <td><input type="text" value="{{ hs.get('1tiet')[i] }}"></td>
+                        {% else %}
+                            <td><input type="text"></td>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if hs.get("diemthi") %}
+                        <td><input type="text" value="{{ hs.get('diemthi')[0] }}"></td>
+                    {% else %}
+                        <td class="score15"><input type="text"></td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function Column15phut(action) {
+        const headerRow = document.getElementById('subHeader');
+        const dataRows = document.querySelectorAll('#scoreTable tbody tr');
+
+        if (action === 'them') {
+            // Thêm cột vào tiêu đề
+            const newHeader = document.createElement('th');
+            newHeader.className = 'score15';
+            newHeader.textContent = headerRow.querySelectorAll('.score15').length + 1;
+            newHeader.style.width = '10%';
+            headerRow.appendChild(newHeader);
+
+            // Thêm cột vào từng hàng dữ liệu
+            dataRows.forEach(row => {
+                const newCell = document.createElement('td');
+                const input = document.createElement('input');
+                input.type = 'text';
+                newCell.appendChild(input);
+                row.appendChild(newCell);
+            });
+        } else if (action === 'xoa') {
+            // Xóa cột cuối cùng trong tiêu đề
+            const scoreHeaders = headerRow.querySelectorAll('.score15');
+            if (scoreHeaders.length > 0) {
+                scoreHeaders[scoreHeaders.length - 1].remove();
+            }
+
+            // Xóa cột cuối cùng trong mỗi hàng dữ liệu
+            dataRows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length > 0) {
+                    cells[cells.length - 1].remove();
+                }
+            });
+        }
+    }
+
+    function Column1tiet(action) {
+        const headerRow = document.getElementById('subHeader');
+        const dataRows = document.querySelectorAll('#scoreTable tbody tr');
+
+        if (action === 'them') {
+            // Thêm cột vào tiêu đề
+            const newHeader = document.createElement('th');
+            newHeader.className = 'score1';
+            newHeader.textContent = headerRow.querySelectorAll('.score1').length + 1;
+            newHeader.style.width = '10%';
+            headerRow.appendChild(newHeader);
+
+            // Thêm cột vào từng hàng dữ liệu
+            dataRows.forEach(row => {
+                const newCell = document.createElement('td');
+                const input = document.createElement('input');
+                input.type = 'text';
+                newCell.appendChild(input);
+                row.appendChild(newCell);
+            });
+        } else if (action === 'xoa') {
+            // Xóa cột cuối cùng trong tiêu đề
+            const scoreHeaders = headerRow.querySelectorAll('.score1');
+            if (scoreHeaders.length > 0) {
+                scoreHeaders[scoreHeaders.length - 1].remove();
+            }
+
+            // Xóa cột cuối cùng trong mỗi hàng dữ liệu
+            dataRows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length > 0) {
+                    cells[cells.length - 1].remove();
+                }
+            });
+        }
+    }
+
+</script>
 
 
-    <script>
 
-    </script>
-</body>
-</html>
+{% endblock %}

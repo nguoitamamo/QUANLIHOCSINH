@@ -1,5 +1,4 @@
 import itertools
-from crypt import methods
 
 from QUANLIHOCSINH import app, login
 from flask import render_template, request, url_for, redirect, session, jsonify
@@ -224,20 +223,28 @@ def loadmoninlop(malop):
 def column15phut(state):
     try:
 
+        socot15phut = session['socot15phut']
+
         if state == 'them':
 
-            print(f"cot: {session['socot15phut']}")
-            socot15phut = session['socot15phut']
             socot15phut = socot15phut + 1
+
+            if socot15phut > 5:
+                return jsonify({'success': False,
+                                'error': "Tối đa 5 cột!"})
 
             session['socot15phut'] = int(socot15phut)
 
             session.modified = True
-            print(f"cot: {session['socot15phut']}")
+
 
         else:
-            socot15phut = session['socot15phut']
+
             socot15phut = socot15phut - 1
+
+            if socot15phut < 1:
+                return jsonify({'success': False,
+                                'error': "Tối thiếu 1 cột!"})
 
             session['socot15phut'] = int(socot15phut)
 
@@ -257,6 +264,10 @@ def addcolumn1tiet(state):
 
             socot1tiet = socot1tiet + 1
 
+            if socot1tiet > 3:
+                return jsonify({'success': False,
+                                'error': "Tối đa 3 cột!"})
+
             session['socot1tiet'] = int(socot1tiet)
 
             session.modified = True
@@ -264,6 +275,10 @@ def addcolumn1tiet(state):
         else:
 
             socot1tiet = socot1tiet - 1
+
+            if socot1tiet < 1:
+                return jsonify({'success': False,
+                                'error': "Tối thiểu 1 cột!"})
 
             session['socot1tiet'] = int(socot1tiet)
 
@@ -274,12 +289,20 @@ def addcolumn1tiet(state):
         return jsonify({'success': False})
 
 
-@app.route('/user/nhapdiem/diemdshocsinh/<lop>/<monhoc>/<hocky>/<namhoc>/<state>', methods=['POST'])
-def diemdshocsinh(lop, monhoc, hocky, namhoc, state):
+@app.route('/user/nhapdiem/diemdshocsinh/<malop>/<monhoc>/<hocky>/<namhoc>/<state>', methods=['POST'])
+def diemdshocsinh(malop, monhoc, hocky, namhoc, state):
+
+    if malop in session:
+        session[malop].clear()
+
+        session.modified= True
+
     data = request.json
     diemdshocsinh = data.get("diemdshocsinh")
+    diemdshocsinh.pop(0)
 
     mahocki = dao.GetHocKi(tenhocki=hocky, namhoc=namhoc.replace(" ", "")).MaHocKi
+
     mamonhoc = dao.GetMonHoc(tenmonhoc=monhoc).MaMonHoc
 
     if state == 'luu':
@@ -289,24 +312,55 @@ def diemdshocsinh(lop, monhoc, hocky, namhoc, state):
                                    mamonhoc=mamonhoc,
                                    mahocki=mahocki,
                                    typeDiem=dao.TypeDiem.PHUT15.value,
-                                   diemList=info['diem15phut'])
+                                   diemListNew=info['diem15phut'])
             dao.AddDiemHocSinhList(maHocSinh=info['maHocSinh'],
                                    mamonhoc=mamonhoc,
                                    mahocki=mahocki,
                                    typeDiem=dao.TypeDiem.TIET1.value,
-                                   diemList=info['diem1tiet'])
+                                   diemListNew=info['diem1tiet'])
 
             if info.get('diemthi'):
-                dao.AddDiemHocSinh(
-                    mahocsinh=info['maHocSinh'],
+                dao.AddDiemHocSinhList(
+                    maHocSinh=info['maHocSinh'],
                     mamonhoc=mamonhoc,
                     mahocki=mahocki,
-                    typediem=dao.TypeDiem.CUOIKI.value,
-                    sodiem=info['diemthi']
+                    typeDiem=dao.TypeDiem.CUOIKI.value,
+                    diemListNew=info['diemthi'].split(",")
                 )
-        return jsonify({'success': True})
+        return jsonify({'success': True,
+                        'state': "Lưu thông tin thành công!"})
     else:
-        dsdiemhocsinh = []
+
+        if malop not in session:
+            session[malop] = []
+
+        for info in diemdshocsinh:
+            if info.get('maHocSinh')  == 'subHeader':
+                continue
+            hs_diem = {
+                        "MaHocSinh": info['maHocSinh'],
+                        "HoTen": info['hoten'],
+                        "15phut": info['diem15phut'],
+                        "1tiet": info['diem1tiet'],
+                        "diemthi": info['diemthi'].split(",")
+
+                        }
+            session[malop].append(hs_diem)
+
+
+        session.modified= True
+        for i in session[malop]:
+            print(
+                f"MaHocSinh: {i.get('MaHocSinh', 'N/A')}, "
+                f"HoTen: {i.get('HoTen', 'N/A')}, "
+                f"15phut: {i.get('15phut', 'N/A')}, "
+                f"1tiet: {i.get('1tiet', 'N/A')}, "
+                f"DiemThi: {i.get('diemthi', 'N/A')}"
+            )
+
+
+        return jsonify({'success': True,
+                        'state': "Lưu thông tin thành công!"})
 
 
 @app.route("/user/xuatdiem")
@@ -326,7 +380,7 @@ def dieuchinhdanhsachlop():
 
     malop = 'L10A' + str(page) + '_' + dao.CurrentYear()
 
-    lophocsinh = dao.LoadLop(malop= malop, key="info")
+    lophocsinh = dao.LoadLop(malop=malop, key="info")
 
     dshocsinhnotlop = dao.HocSinhNotLop()
 
@@ -639,12 +693,9 @@ def removehs(tenlop, mahocsinh):
 def getinfolop():
     if request.method == 'POST':
         data = request.form.copy()
-
         print(data)
 
         mamonhoc = dao.GetMonHoc(tenmonhoc=data['monhoc']).MaMonHoc
-
-
 
         mahocki = dao.GetHocKi(tenhocki=data['hocky'], namhoc=data['namhoc'].replace(" ", "")).MaHocKi
 
@@ -660,7 +711,13 @@ def getinfolop():
 
         dslop = dao.LoadLopEdHoc()
 
-        return render_template('nhapdiem.html', dshocsinh=dshocsinh['diemdshocsinh'], dslopcheckbox=dslop, **data)
+
+        if data['dslop'] not in session:
+            dshocsinh = dshocsinh['diemdshocsinh']
+        else:
+            dshocsinh = session[data['dslop']]
+
+        return render_template('nhapdiem.html', dshocsinh=dshocsinh, dslopcheckbox=dslop, **data)
 
     return redirect(url_for('index'))
 
@@ -672,7 +729,6 @@ def baocaothongke():
 
 @app.route('/user/nhapdiem/lop/search/<keyword>/<field>/<malop>', methods=['GET'])
 def search(keyword, field, malop):
-
     if field == "lop":
         lop = dao.LoadLopEdHoc()
 
@@ -684,7 +740,7 @@ def search(keyword, field, malop):
 
         print(suggestionEdOfKeyword)
 
-    elif field ==  "monhoc":
+    elif field == "monhoc":
 
         monhocs = dao.LoadMonHocOfLop(malop)
 
@@ -693,9 +749,7 @@ def search(keyword, field, malop):
 
         suggestionEdOfKeyword = utils.SuggestedLop(ds=monhocs, keyword=keyword)
 
-
     return jsonify(suggestionEdOfKeyword)
-
 
 
 @app.route('/user/danhsachlop')
@@ -717,13 +771,16 @@ def danhsachlop():
                            dskhoi=dao.LoadKhoiAll())
 
 
+@app.route('/user/nhapdiem/timkiemhocsinh', methods=['POST', 'GET'])
+def findhocsinh():
+    return render_template("nhapdiem.html")
+
 
 # @app.route('/user/danhsachlop/<makhoi>', methods = ['POST'])
 # def loadlopofkhoi(makhoi):
 #
 #
 #
-
 
 
 @login.user_loader

@@ -1,8 +1,10 @@
-const lop = document.getElementById('dslop');
+let lop = document.getElementById('dslop');
 const searchInputLop = document.getElementById('lopLabel');
 const suggestionsListLop = document.getElementById('suggestionLop');
 const searchInputMon = document.getElementById('monhocLabel');
 const suggestionsListMon = document.getElementById('suggestionMonHoc');
+const errorContainer = document.querySelector('.alert-danger');
+const errorText = document.getElementById('error');
 
 
 function Column15phut(state) {
@@ -18,7 +20,8 @@ function Column15phut(state) {
             if (data.success) {
                 window.location.reload();
             } else {
-                alert("Xóa thất bại. Vui lòng thử lại!");
+                errorText.innerText = data.error; // Hiển thị nội dung lỗi
+                errorContainer.style.display = "block";
             }
         })
 
@@ -39,7 +42,8 @@ function Column1tiet(state) {
             if (data.success) {
                 window.location.reload();
             } else {
-                alert("Xóa thất bại. Vui lòng thử lại!");
+                errorText.innerText = data.error; // Hiển thị nội dung lỗi
+                errorContainer.style.display = "block";
             }
         })
 
@@ -47,21 +51,34 @@ function Column1tiet(state) {
 
 
 function GetDataTable() {
-    var socot15phut = parseInt(document.getElementById("socot15phut").textContent.trim());
-    var socot1tiet = parseInt(document.getElementById("socot1tiet").textContent.trim());
+
+
+    const socot15phut = parseInt(document.getElementById("socot15phut").textContent.trim());
+    const socot1tiet = parseInt(document.getElementById("socot1tiet").textContent.trim());
+
 
     diemhocsinh = []
 
     $('#scoreTable tr').each(function () {
 
-        var maHocSinh = $(this).attr("id");
+        var maHocSinh = ''
 
+        maHocSinh = $(this).attr("id");
 
+        var hoten = $(this).find("td").eq(1).text();
+
+        if (maHocSinh === "") {
+            return; // Skip this row if maHocSinh is empty
+        }
+
+        console.log(hoten)
         var diem15phut = [];
         for (var i = 2; i < 2 + socot15phut; i++) {
             var diem = $(this).find("td").eq(i).find("input").val();
             if (diem && diem.trim() !== "") {
                 diem15phut.push(diem.trim());
+            } else {
+                diem15phut.push('');
             }
         }
 
@@ -71,6 +88,8 @@ function GetDataTable() {
             var diem = $(this).find("td").eq(i).find("input").val();
             if (diem && diem.trim() !== "") {
                 diem1tiet.push(diem.trim());
+            } else {
+                diem1tiet.push('');
             }
         }
 
@@ -79,14 +98,16 @@ function GetDataTable() {
             diemthi = "";
         }
 
-        if (diem15phut.length > 0 || diem1tiet.length > 0 || diemthi !== "") {
+        if (maHocSinh && maHocSinh.trim() !== "" && (diem15phut.length > 0 || diem1tiet.length > 0 || diemthi !== "")) {
             diemhocsinh.push({
                 maHocSinh: maHocSinh,
+                hoten: hoten,
                 diem15phut: diem15phut,
                 diem1tiet: diem1tiet,
                 diemthi: diemthi
             });
         }
+
 
     });
     return diemhocsinh
@@ -128,7 +149,7 @@ function Suggestion(keyword, searchInput, suggestionsList, field) {
                                 break;
                             }
                         }
-                         LoadMonOfLop();
+                        LoadMonOfLop();
 
                     });
 
@@ -175,17 +196,7 @@ function updateLabel(selectElement, inputId) {
 
 }
 
-
-// searchInputLop.addEventListener('change', function () {
-//
-//
-//
-// });
-
-//
 lop.addEventListener('change', function () {
-
-
     LoadMonOfLop();
 });
 
@@ -199,7 +210,13 @@ function saveTableData(state) {
     hocki = document.getElementById("hocky").value;
     namhoc = document.getElementById("namhoc").value;
 
-    fetch(`/user/nhapdiem/diemdshocsinh/${lop.value}/${monhoc}/${hocki}/${namhoc}/${state}`, {
+
+    const selectedOption = lop.options[lop.selectedIndex];
+
+    malop = selectedOption.value;
+
+    console.log(malop)
+    fetch(`/user/nhapdiem/diemdshocsinh/${malop}/${monhoc}/${hocki}/${namhoc}/${state}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -211,7 +228,10 @@ function saveTableData(state) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("thafnh coong")
+
+                errorText.innerText = data.state; // Hiển thị nội dung lỗi
+                errorContainer.style.display = "block";
+
             }
         })
 
@@ -253,4 +273,5 @@ function LoadMonOfLop() {
                 alert(data.error);
             }
         })
+
 }
