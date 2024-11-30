@@ -60,7 +60,6 @@ function SaveInforDshocsinh() {
 function RemoveHS(MaHocSinh, TenLop) {
 
 
-    alert(MaHocSinh , TenLop)
 
     fetch(`/user/dieuchinhdanhsachlop/removehocsinh/${TenLop}/${MaHocSinh}`, {
         method: 'post',
@@ -75,6 +74,7 @@ function RemoveHS(MaHocSinh, TenLop) {
                 if (row) {
                     row.remove();
                 }
+                alert("thành công")
                 window.location.reload();
             } else {
                 alert("Xóa không thành công!")
@@ -104,10 +104,11 @@ function CheckAddHocSinh(id, obj) {
 }
 
 
-function AddHocSinhToLop(requesturl) {
-    var page = requesturl.charAt(requesturl.length - 1);
+function AddHocSinhToLop(tenlop) {
 
-    fetch(`/user/dieuchinhdanhsachlop/addhocsinh/ds/${page}`, {
+
+
+    fetch(`/user/dieuchinhdanhsachlop/addhocsinh/ds/${tenlop}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -127,4 +128,26 @@ window.onload = function() {
     checkboxes.forEach(checkbox => {
         checkbox.checked = false;
     });
+}
+
+
+
+function SelectKhoi(obj) {
+
+
+    alert(obj.value);
+
+    fetch(`/user/dieuchinhdanhsachlop/khoi/${obj.value}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+
+    }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            }
+        })
+
 }

@@ -25,6 +25,7 @@
                                                  href="{{ url_for('lapdanhsachlop',page = i) }}">{{ i }}</a></li>
                     {% endfor %}
                 </div>
+
                 <div>
                     <button class="btn btn-sua"><a href="{{ url_for('dieuchinhdanhsachlop') }}"
                                                    style="text-decoration: none; color: black">Sửa</a></button>
@@ -36,46 +37,41 @@
 
 
 
-    {% for ten_lop, danh_sach_hoc_sinh in lophocsinh.items() %}
-        <div class="container mt-3">
-            <h2>Lớp: {{ ten_lop }}</h2>
-            <p>Sĩ số: {{ danh_sach_hoc_sinh | length }}</p>
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th>STT</th>
-                    <th>Họ tên</th>
-                    <th>Giới tính</th>
-                    <th>Năm sinh</th>
-                    <th>Địa chỉ</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for hs in danh_sach_hoc_sinh %}
-                    {% for info in hs %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{{ info.Ho }} {{ info.Ten }}</td>
-                            <td>{{ info.GioiTinh }}</td>
-                            <td>{{ info.NgaySinh.strftime('%Y') }}</td>
-                            <td>{{ info.DiaChi }}</td>
-                            {#            <td>#}
-                            {#                <button type="submit" style="background: none; border: none"><i class="fa-solid fa-plus"></i>#}
-                            {#                </button>#}
-                            {#            </td>#}
-                            {#            <td>#}
-                            {#                <button type="submit" style="background: none; border: none" id = "btn_remove_hocsinh"><i class="fa-solid fa-minus"></i></button>#}
-                            {#            </td>#}
 
+    <div class="container mt-3">
+        <h2>Lớp: {{ lop }}</h2>
+        <p>Sĩ số: {{ lophocsinh | length }}</p>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>STT</th>
+                <th>Họ tên</th>
+                <th>Giới tính</th>
+                <th>Năm sinh</th>
+                <th>Địa chỉ</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for hocsinh in lophocsinh %}
+                {% for info in hocsinh %}
 
-                        </tr>
-                    {% endfor %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ info.Ho }} {{ info.Ten }}</td>
+                        <td>{{ info.GioiTinh }}</td>
+                        <td>{{ info.NgaySinh.strftime('%Y') }}</td>
+                        <td>{{ info.DiaChi }}</td>
+                    </tr>
+
                 {% endfor %}
-                </tbody>
-            </table>
-        </div>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-    {% endfor %}
+
+    <script src="{{ url_for('static', filename = 'js/lapdanhsachlop.js') }}"></script>
+
 
 
 {% endblock %}

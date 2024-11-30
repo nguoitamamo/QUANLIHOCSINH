@@ -26,9 +26,6 @@ class Account(db.Model, UserMixin):
     Active = Column(Boolean, default=False)
     UserInfor = relationship("UserInfor", backref='account', uselist= False, lazy=True)
     PermissionUsers = relationship("PermissionUser", backref='account', lazy=True)
-    # Admin = relationship("Admin", backref='account',uselist= False,  lazy=True)
-    # NhanVienBoPhanKhac = relationship("NhanVienBoPhanKhac", backref='account', uselist= False, lazy=True)
-    # GiangVien = relationship("GiangVien", backref='account', uselist= False, lazy=True)
     HocSinh = relationship("HocSinh", backref='account', uselist= False, lazy=True)
     role = Column(Enum(Role), default=Role.GiangVien)
 

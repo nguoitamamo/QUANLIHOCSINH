@@ -6,16 +6,18 @@
 .form-row {
     display: flex;
     margin-bottom: 15px;
+    flex-direction: column;
 }
 
 
 .form-row .form-row-1 label,
-.form-row label{
+.form-row label {
     width: 100px;
 }
-.form-row .form-row-1:nth-child(2) label {
-    margin-left: 10px;
-}
+
+/*.form-row .form-row-1:nth-child(2) label {*/
+/*    margin-left: 10px;*/
+/*}*/
 
 
 .form-row div {
@@ -24,8 +26,7 @@
 }
 
 .form-row input[type="text"],
-.form-row select
-{
+.form-row select {
     flex: 2;
     padding: 8px;
     border: 1px solid #ddd;
@@ -33,10 +34,10 @@
     font-size: 14px;
 }
 
-.form-row input[type="text"] + label,
-.form-row select + label {
-    margin-left: 20px;
-}
+/*.form-row input[type="text"] + label,*/
+/*.form-row select + label {*/
+/*    margin-left: 20px;*/
+/*}*/
 
 
 .custom-table {
@@ -66,7 +67,7 @@
 }
 
 .custom-table button {
-    border:none;
+    border: none;
     width: 30px;
     background: none;
 }
@@ -80,4 +81,22 @@
 
 tr:hover {
     background-color: #e8d556;
+}
+
+#suggestionLop,
+#suggestionMonHoc {
+    width: 100%;
+    list-style-type: none;
+
+}
+
+#suggestionLop li,
+#suggestionMonHoc li{
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+#suggestionLop li:hover,
+#suggestionMonHoc li:hover{
+    background-color: #f0f0f0;
 }

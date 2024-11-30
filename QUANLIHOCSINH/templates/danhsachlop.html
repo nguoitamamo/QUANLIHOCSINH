@@ -24,6 +24,7 @@
             width: 200px;
             border-radius: 10px;
         }
+
         select + i {
             margin: 20px;
         }
@@ -82,32 +83,22 @@
         </div>
     {% endif %}
 
-    {#    <form action="" method="POST" class="form-container">#}
-    {#        <div class="form-row">#}
-    {#            <label for="lopLabel">Khối: </label>#}
-    {#            <select name="dslop" onchange="updateLabel(this, 'lopLabel')">#}
-    {#                <option value="">Khối</option>#}
-    {#                {% for i in dskhoi %}#}
-    {#                    <option value="{{ i.TenLop }}">{{ i.TenLop }}</option>#}
-    {#                {% endfor %}#}
-    {#            </select>#}
-    {##}
-    {##}
-    {#        </div>#}
-    {#        <div style="margin: 20px auto;">#}
-    {#            <button type="submit" class="btn-save-infor-hocsinh">Tìm kiếm</button>#}
-    {#        </div>#}
-    {#    </form>#}
 
     {% if solop %}
         <div class="container mt-3">
             <ul class="pagination">
                 <li class="page-item"><a class="page-link" href="#">Khối</a></li>
-                <li class="page-item" style = "margin-left: 5px;"><a class="page-link" href="#">Lớp</a></li>
-                {% for i in range(1, solop + 1) %}
-                    <li class="page-item"><a class="page-link"
-                                             href="{{ url_for('dieuchinhdanhsachlop',page=i) }}">{{ i }}</a></li>
-                {% endfor %}
+                <select name="dslop" onchange="SelectKhoi(this)">
+                    {% for i in dskhoi %}
+                        <option value="{{ i.MaKhoi }}" onclick = "LoadLopOfKhoi('{{ i.MaKhoi }}')">{{ i.TenKhoi }}</option>
+                    {% endfor %}
+                </select>
+                <select name="dslop" id="dslop" onclick="updateLabel(this, 'lopLabel')">
+                    <option value="">Lớp</option>
+                    {% for i in dslopcheckbox %}
+                        <option value="{{ i.MaLop }}">{{ i.TenLop }}</option>
+                    {% endfor %}
+                </select>
             </ul>
         </div>
     {% endif %}

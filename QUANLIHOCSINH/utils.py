@@ -16,7 +16,7 @@ def rand_Pass_Confirm_Email():
     return str(random.randint(10000, 99999))
 
 
-def Send_Email(subject,content, email_rec):
+def Send_Email(subject, content, email_rec):
     email = "2251052130truong@ou.edu.vn"
     passw = "18072004@Hnt"
     email_send = email_rec
@@ -39,15 +39,13 @@ def Send_Email(subject,content, email_rec):
 
 
 def LoadFile(file):
-
     df = pd.read_excel(file, dtype={"Số điện thoại": str})
-
 
     dic = []
 
     for i, row in df.iterrows():
         dic.append({
-            "STT" : row["STT"],
+            "STT": row["STT"],
             "Họ": row["Họ"],
             "Tên": row["Tên"],
             "Điểm": row["Điểm"],
@@ -58,11 +56,10 @@ def LoadFile(file):
             "Số điện thoại": row["Số điện thoại"]
         })
 
-    return  dic
+    return dic
 
 
-def Pagination_Data(data, page, total_record = 10):
-
+def Pagination_Data(data, page, total_record=10):
     total_page = ceil(len(data) / total_record)
 
     start = (page - 1) * total_record
@@ -70,11 +67,10 @@ def Pagination_Data(data, page, total_record = 10):
 
     df_page = list(islice(data, start, end))
 
-    return  {
-        "dic_page" : df_page,
-        "total_page" : total_page
+    return {
+        "dic_page": df_page,
+        "total_page": total_page
     }
-
 
 
 def SaveIntoSession(dshocsinh):
@@ -88,8 +84,8 @@ def SaveIntoSession(dshocsinh):
                 "Tên": info.Ten,
                 "Điểm": info.DiemTbDauVao,
                 "Ngày sinh": info.NgaySinh,
-                "Giới tính":info.GioiTinh,
-                "Địa chỉ":info.DiaChi
+                "Giới tính": info.GioiTinh,
+                "Địa chỉ": info.DiaChi
             })
 
     return dic
@@ -100,7 +96,30 @@ def SaveIntoSession(dshocsinh):
 
 
 
+def SuggestedLop(ds, keyword):
+  
+    res = []
 
-if __name__ == '__main__':
-    with app.app_context():
-        print(dataframe1)
+    l, r = 0, len(ds) - 1
+
+    for i in range(len(keyword)):
+        c = keyword[i]
+
+        while l <= r and (len(ds[l]) <= i or ds[l][i] != c):
+            l += 1
+
+        while l <= r and (len(ds[r]) <= i or ds[r][i] != c):
+            r -= 1
+
+
+    res.append([])
+    remain = r - l + 1
+    for j in range(min(5, remain)):
+        res[-1].append(ds[l + j])
+
+    return res
+
+
+# if __name__ == '__main__':
+#     with app.app_context():
+#         # print(SuggestedLop("app"))
