@@ -24,8 +24,18 @@
             width: 200px;
             border-radius: 10px;
         }
+
         select + i {
             margin: 20px;
+        }
+
+        .stt,
+        .hoten,
+        .gioitinh,
+        .diachi,
+        .namsinh,
+        .xoa {
+            width: 16%;
         }
     </style>
 
@@ -56,9 +66,10 @@
                         </thead>
                         <tbody>
                         {% for hs in dshocsinhnotlop %}
-                            {% for info in hs %}
-                                <tr>
-                                    <td>{{ loop.index }}</td>
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                {% for info in hs %}
+
                                     <td>{{ info.Ho }} {{ info.Ten }}</td>
                                     <td>{{ info.DiemTbDauVao }}</td>
                                     <td>{{ info.GioiTinh }}</td>
@@ -69,8 +80,9 @@
                                                onchange="CheckAddHocSinh('{{ info.UserID }}' , this)">
 
                                     </td>
-                                </tr>
-                            {% endfor %}
+
+                                {% endfor %}
+                            </tr>
                         {% endfor %}
                         </tbody>
                     </table>
@@ -103,7 +115,7 @@
         <div class="container mt-3">
             <ul class="pagination">
                 <li class="page-item"><a class="page-link" href="#">Khối</a></li>
-                <li class="page-item" style = "margin-left: 5px;"><a class="page-link" href="#">Lớp</a></li>
+                <li class="page-item" style="margin-left: 5px;"><a class="page-link" href="#">Lớp</a></li>
                 {% for i in range(1, solop + 1) %}
                     <li class="page-item"><a class="page-link"
                                              href="{{ url_for('dieuchinhdanhsachlop',page=i) }}">{{ i }}</a></li>
@@ -116,43 +128,52 @@
     <div class="container mt-3">
         <h2>Lớp: {{ lop }}</h2>
         <p>Sĩ số: {{ lophocsinh | length }}</p>
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th>STT</th>
-                <th>Họ tên</th>
-                <th>Giới tính</th>
-                <th>Năm sinh</th>
-                <th>Địa chỉ</th>
-                <th>Xóa</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for hocsinh in lophocsinh %}
-                {% for info in hocsinh %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td>{{ info.Ho }} {{ info.Ten }}</td>
-                        <td>{{ info.GioiTinh }}</td>
-                        <td>{{ info.NgaySinh.strftime('%Y') }}</td>
-                        <td>{{ info.DiaChi }}</td>
-                        <td>
-                            <button style="background: none; border: none"
-                                    onclick="RemoveHS('{{ info.UserID }}', '{{ lop }}')">
-                                <i class="fa-solid fa-minus"></i>
-                            </button>
-                        </td>
+        <div>
+            <table class="table table-striped" style="width: 100%; border-collapse: collapse; margin-bottom: 0">
+                <thead>
+                <tr>
+                    <th class="stt">STT</th>
+                    <th class="hoten">Họ tên</th>
+                    <th class="gioitinh">Giới tính</th>
+                    <th class="namsinh">Năm sinh</th>
+                    <th class="diachi">Địa chỉ</th>
+                    <th class="xoa">Xóa</th>
+                </tr>
+                </thead>
+            </table>
+
+            <div style="height: 450px; overflow-y: auto; margin-bottom: 50px">
+                <table id="scoreTable" class="table table-striped custom-table"
+                       style="width: 100%; border-collapse: collapse; margin-bottom: 0;">
+                    <tbody>
+                    {% for hocsinh in lophocsinh %}
+                        <tr>
+                            <td class="stt">{{ loop.index }}</td>
+                            {% for info in hocsinh %}
+
+                                <td class="hoten">{{ info.Ho }} {{ info.Ten }}</td>
+                                <td class="gioitinh">{{ info.GioiTinh }}</td>
+                                <td class="namsinh">{{ info.NgaySinh.strftime('%Y') }}</td>
+                                <td class="diachi">{{ info.DiaChi }}</td>
+                                <td class="xoa">
+                                    <button style="background: none; border: none"
+                                            onclick="RemoveHS('{{ info.UserID }}', '{{ lop }}')">
+                                        <i class="fa-solid fa-minus"></i>
+                                    </button>
+                                </td>
 
 
-                    </tr>
-                {% endfor %}
-            {% endfor %}
-            </tbody>
-        </table>
+
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
     </div>
-
-
-
 
     <script src="{{ url_for('static', filename='js/saveinfordshocsinh.js') }}"></script>
 {% endblock %}

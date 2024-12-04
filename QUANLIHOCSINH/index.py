@@ -1,4 +1,5 @@
 import itertools
+from datetime import datetime
 
 from QUANLIHOCSINH import app, login
 from flask import render_template, request, url_for, redirect, session, jsonify
@@ -145,10 +146,6 @@ def commom_response():
     return {'Permission': dao.Load_Permission()}
 
 
-# @app.route('/user/<id>')
-# def Login_User_Success(id):
-#     return render_template('user.html')
-
 @app.route('/capnhatthongtin')
 def capnhatthongtin():
     Permission = dao.Load_PermissionALL()
@@ -189,10 +186,10 @@ def tiepnhanhocsinh():
 @app.route("/user/nhapdiem")
 def nhapdiem():
     if "socot15phut" not in session:
-        session['socot15phut'] = 1
+        session['socot15phut'] = 3
 
     if "socot1tiet" not in session:
-        session['socot1tiet'] = 1
+        session['socot1tiet'] = 3
 
     lop = dao.LoadLopEdHoc()
 
@@ -293,13 +290,14 @@ def addcolumn1tiet(state):
 def diemdshocsinh(malop, monhoc, hocky, namhoc, state):
 
     if malop in session:
-        session[malop].clear()
+        del session[malop]
 
         session.modified= True
 
     data = request.json
     diemdshocsinh = data.get("diemdshocsinh")
     diemdshocsinh.pop(0)
+
 
     mahocki = dao.GetHocKi(tenhocki=hocky, namhoc=namhoc.replace(" ", "")).MaHocKi
 
@@ -390,11 +388,6 @@ def dieuchinhdanhsachlop():
                            lop='10A' + str(page))
 
 
-# @app.route('/user/dieuchinhdanhsachlop/khoi/<makhoi>', methods=["POST"])
-# def getsolopofkhoi(makhoi):
-#
-#
-
 
 @app.route('/user/dieuchinhdanhsachlop/addhocsinh/<id>', methods=["POST"])
 def savehocsinhtosession(id):
@@ -441,13 +434,21 @@ def SaveInforHocSinh():
             avatar = request.files.get('avatar')
             sdt = list(request.form.getlist('sdt'))
 
+            ngaysinh = request.form.get('ngaysinh')
+
+            age = int(dao.CurrentYear()) - int(datetime.strptime(ngaysinh, '%Y-%m-%d').year)
+
             data = request.form.copy()
 
-            del data['diemTbDauVao']
-            del data['sdt']
+            if 15 <= age <= 20:
+                del data['diemTbDauVao']
+                del data['sdt']
 
-            dao.add_HocSinh(diemTbDauVao=diemTbDauVao, sdt=sdt, avatar=avatar, **data)
-            return render_template('tiepnhanhocsinh.html', mess="Lưu thông tin thành công!")
+                dao.add_HocSinh(diemTbDauVao=diemTbDauVao, sdt=sdt, avatar=avatar, **data)
+                return render_template('tiepnhanhocsinh.html', mess="Lưu thông tin thành công!")
+            else:
+                return render_template('tiepnhanhocsinh.html', mess="Độ tuổi từ 15 đến 20!", **data)
+
         except Exception as ex:
             return render_template('tiepnhanhocsinh.html', mess=str(ex))
     return redirect(url_for('index'))
@@ -671,9 +672,11 @@ def saveinforDshocsinh():
                             ngaysinh=i['Ngày sinh'], gioitinh=i['Giới tính'], diachi=i['Địa chỉ'],
                             email=i['Email'], sdt=i['Số điện thoại'].rsplit('/'))
 
-        return jsonify({"success": True})
+        return jsonify({"success": True,
+                        "error": "Lưu thành công!"})
     except Exception as e:
-        return jsonify({"success": False})
+        return jsonify({"success": False,
+                        "error": str(e)})
 
 
 @app.route('/user/dieuchinhdanhsachlop/removehocsinh/<tenlop>/<mahocsinh>', methods=['post'])
@@ -692,34 +695,68 @@ def removehs(tenlop, mahocsinh):
 @app.route('/user/nhapdiem/lop', methods=['POST'])
 def getinfolop():
     if request.method == 'POST':
+
         data = request.form.copy()
-        print(data)
 
         mamonhoc = dao.GetMonHoc(tenmonhoc=data['monhoc']).MaMonHoc
 
         mahocki = dao.GetHocKi(tenhocki=data['hocky'], namhoc=data['namhoc'].replace(" ", "")).MaHocKi
 
-        dshocsinh = dao.LoadLop(malop=data['dslop'], key="diem", mamonhoc=mamonhoc, mahocki=mahocki)
+        dslop = dao.LoadLopEdHoc()
 
-        session['socot15phut'] = dshocsinh["max15phut"] if dshocsinh["max15phut"] > session['socot15phut'] else session[
-            'socot15phut']
+        dshocsinh = []
 
-        session['socot1tiet'] = dshocsinh["max1tiet"] if dshocsinh["max1tiet"] > session['socot1tiet'] else session[
-            'socot1tiet']
+        max15phut = 1
+        max1tiet = 1
+
+        if data['searchhocsinh']:
+
+            hocsinh = dao.GetHocSinhByTenEmailPhone(inputsearch = data['searchhocsinh'])
+
+            if hocsinh:
+                hs_diem = {
+                    "MaHocSinh": hocsinh['MaHocSinh'],
+                    "HoTen": hocsinh['HoTen'],
+                    **dao.LoadHSinfo(hocsinh['MaHocSinh'], key="diem",  mamonhoc=mamonhoc, mahocki=mahocki)
+                }
+                dshocsinh.append(hs_diem)
+                for i in dshocsinh:
+                    max15phut = len(i['15phut'])
+                    max1tiet = len(i['1tiet'])
+
+
+            else:
+                return render_template('nhapdiem.html',
+                                       dslopcheckbox=dslop, **data, malop =data['dslop'])
+        else:
+
+            dshocsinh = dao.LoadLop(malop=data['dslop'], key="diem", mamonhoc=mamonhoc, mahocki=mahocki)
+
+
+            max15phut = dshocsinh["max15phut"]
+            max1tiet = dshocsinh["max1tiet"]
+
+            if data['dslop'] not in session:
+                dshocsinh = dshocsinh['diemdshocsinh']
+            else:
+                dshocsinh = session[data['dslop']]
+
+
+        session['socot15phut'] = max15phut if max15phut > session['socot15phut'] else session['socot15phut']
+
+        session['socot1tiet'] = max1tiet if max1tiet > session['socot1tiet'] else session['socot1tiet']
 
         session.modified = True
 
-        dslop = dao.LoadLopEdHoc()
-
-
-        if data['dslop'] not in session:
-            dshocsinh = dshocsinh['diemdshocsinh']
-        else:
-            dshocsinh = session[data['dslop']]
-
-        return render_template('nhapdiem.html', dshocsinh=dshocsinh, dslopcheckbox=dslop, **data)
+        return render_template('nhapdiem.html', dshocsinh=dshocsinh,
+                                   dslopcheckbox=dslop, **data, malop =data['dslop'])
 
     return redirect(url_for('index'))
+
+
+
+# @app.route('user/nhapdiem/timkiemhocsinh')
+# def nhapdiemtimkiemhocsinh():
 
 
 @app.route("/user/baocaothongke")
@@ -771,9 +808,12 @@ def danhsachlop():
                            dskhoi=dao.LoadKhoiAll())
 
 
-@app.route('/user/nhapdiem/timkiemhocsinh', methods=['POST', 'GET'])
-def findhocsinh():
-    return render_template("nhapdiem.html")
+# @app.route('/user/nhapdiem/timkiemhocsinh', methods=['POST', 'GET'])
+# def findhocsinh():
+#
+#     input = request.form.get('searchhocsinh')
+#
+#     return render_template("nhapdiem.html")
 
 
 # @app.route('/user/danhsachlop/<makhoi>', methods = ['POST'])

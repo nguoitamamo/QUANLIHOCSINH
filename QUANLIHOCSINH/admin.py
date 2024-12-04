@@ -63,12 +63,12 @@ class ThongTinUser(BaseView):
 
     column_list = ['Ho', 'Ten', 'NgaySinh', 'GioiTinh', 'DiaChi', 'Email']
 
-    def get_query(self):
-        # Lấy danh sách học sinh chưa có lớp
-        hoc_sinh_chua_lop = dao.HocSinhNotLop(449)  # Dựng phương thức này trả về danh sách học sinh chưa có lớp
-        # Tạo truy vấn lọc các học sinh chưa có lớp
-        query = super(ThongTinUser, self).get_query()
-        return query.filter(models.UserInfor.UserID.in_([i.MaHocSinh for i in hoc_sinh_chua_lop]))
+    # def get_query(self):
+    #     # Lấy danh sách học sinh chưa có lớp
+    #     hoc_sinh_chua_lop = dao.HocSinhNotLop(449)  # Dựng phương thức này trả về danh sách học sinh chưa có lớp
+    #     # Tạo truy vấn lọc các học sinh chưa có lớp
+    #     query = super(ThongTinUser, self).get_query()
+    #     return query.filter(models.UserInfor.UserID.in_([i.MaHocSinh for i in hoc_sinh_chua_lop]))
 
     column_searchable_list = ['Ho', 'Ten', 'NgaySinh', 'GioiTinh', 'DiaChi', 'Email']
 

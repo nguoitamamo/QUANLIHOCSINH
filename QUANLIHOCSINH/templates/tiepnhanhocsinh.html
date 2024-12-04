@@ -96,17 +96,17 @@
                         <div class="w3-container w3-infor">
                             <p>
                                 <i class="fa fa-home fa-fw w3-margin-right w3-large w3-text-teal"></i>
-                                <input type="text" name="diachi" placeholder="  Địa chỉ..">
+                                <input type="text" name="diachi" placeholder="  Địa chỉ.." value = {{ diachi }}>
                             </p>
                             <p>
                                 <i class="fa fa-envelope fa-fw w3-margin-right w3-large w3-text-teal"></i>
-                                <input type="Email" name="email" placeholder="  Email..">
+                                <input type="Email" name="email" placeholder="  Email.." value = {{ email }}>
                             </p>
 
                             <p>
 
                                 <i class="fa-solid fa-hand-point-right"></i>
-                                <input type="text" name="diemTbDauVao" placeholder="  Điểm đầu vào">
+                                <input type="text" name="diemTbDauVao" placeholder="  Điểm đầu vào" value = {{ diemTbDauVao }}>
 
                             </p>
                         </div>
@@ -123,19 +123,19 @@
                             <div class="w3-container">
                                 <p>
                                     <i class="fa-solid fa-person"></i>
-                                    <input type="text" name="firstname" placeholder="  Frist Name ...">
+                                    <input type="text" name="firstname" placeholder="  Frist Name ..." value = {{ firstname }}>
                                 </p>
                             </div>
                             <div class="w3-container">
                                 <p>
                                     <i class="fa-solid fa-person"></i>
-                                    <input type="text" name="lastname" placeholder="  Last Name ...">
+                                    <input type="text" name="lastname" placeholder="  Last Name ..." value = {{ lastname }}>
                                 </p>
                             </div>
                             <div class="w3-container">
                                 <p>
                                     <i class="fa-solid fa-cake-candles"></i>
-                                    <input type="date" name="ngaysinh">
+                                    <input type="date" name="ngaysinh" value = {{ ngaysinh }}>
                                 </p>
                             </div>
                             <div class="w3-container">
@@ -220,7 +220,7 @@
 
     <div class="container mt-3" id="div_danhsachhocsinh">
         <h2>Danh sách học sinh</h2>
-        <table class="table table-striped">
+        <table class="table table-striped" >
             <thead>
             <tr>
                 <th>STT</th>
@@ -228,11 +228,11 @@
                 <th>Tên</th>
                 <th>Điểm</th>
                 <th>Giới tính</th>
-                <th>Ngày sinh</th>
+                <th>Năm sinh</th>
                 <th>Địa chỉ</th>
                 <th>Email</th>
                 <th>Số điện thoại</th>
-                <th></th>
+                <th>Xóa</th>
 
             </tr>
             </thead>
@@ -244,7 +244,7 @@
                     <td>{{ row['Tên'] }}</td>
                     <td>{{ row['Điểm'] | round(1) }}</td>
                     <td>{{ row['Giới tính'] }}</td>
-                    <td>{{ row['Ngày sinh'].strftime('%d-%m-%Y') }}</td>
+                    <td class = "ngaysinh">{{ row['Ngày sinh'].strftime('%Y') }}</td>
                     <td>{{ row['Địa chỉ'] }}</td>
                     <td>{{ row['Email'] }}</td>
                     <td>
@@ -271,6 +271,11 @@
 
     <script src="{{ url_for('static', filename='js/add_phone.js') }}"></script>
     <script src="{{ url_for('static', filename='js/saveinfordshocsinh.js') }}"></script>
+    <script>
 
+
+
+
+    </script>
 
 {% endblock %}

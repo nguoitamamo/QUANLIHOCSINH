@@ -356,6 +356,52 @@ def GetMonHoc(mamonhoc=None, tenmonhoc=None):
         .first()
     )
 
+def GetIDByPhone(number):
+    return db.session.query(models.Phone.UserID).filter(models.Phone.Number == number).first()
+
+def GetIDByEmail(email):
+    return db.session.query(models.UserInfor.UserID, models.UserInfor.Ho , models.UserInfor.Ten).filter(
+            models.UserInfor.Email == email).first()
+
+
+def GetHocSinhByTenEmailPhone(inputsearch):
+
+    phone = GetIDByPhone(inputsearch)
+    if phone:
+        return {"MaHocSinh": phone.UserID,
+                "HoTen": GetUserInforByUserID(phone.UserID)}
+
+    hoten = GetIDByEmail(inputsearch)
+
+    if hoten:
+        return {"MaHocSinh": hoten.UserID,
+                "HoTen": hoten.Ho + ' ' + hoten.Ten}
+
+    return None
+
+
+# def GetHocSinhByTenEmailPhone(inputsearch):
+#     result = db.session.query(models.UserInfor.UserID, models.UserInfor.Ho , models.UserInfor.Ten).filter(
+#         or_(
+#             func.concat(models.UserInfor.Ho, models.UserInfor.Ten) == inputsearch,
+#             models.UserInfor.Email == inputsearch
+#         )
+#     ).join(
+#         models.Phone, models.UserInfor.UserID == models.Phone.UserID, isouter=True
+#     ).filter(
+#         or_(
+#             models.Phone.Number == inputsearch
+#             # models.Phone.Number == None  # Nếu không có số điện thoại
+#         )
+#     ).first()
+#
+#     if result:
+#         return { "MaHocSinh" : result.UserID,
+#                 "HoTen":result.Ho + " "  + result.Ten
+#                  }
+#
+#     return None
+
 
 def GetHocKi(tenhocki, namhoc):
     return db.session.query(models.HocKi.MaHocKi).filter(models.HocKi.TenHocKi == tenhocki,
@@ -381,13 +427,18 @@ def GetUserInforByUserID(userid):
     user =  db.session.query(models.UserInfor.Ho, models.UserInfor.Ten).filter(models.UserInfor.UserID == userid).first()
     return user.Ho + " " + user.Ten
 
+
+
+
+
 class TypeDiem(Enum):
     PHUT15 = "15 phút"
     TIET1 = "1 tiết"
     CUOIKI = "cuối kì"
 
 
-def LoadLop(malop, key, mamonhoc=None, mahocki=None):
+
+def LoadLop(malop, key, mamonhoc = None, mahocki = None):
     dshocsinh = []
 
     hocsinh = (db.session.query(models.LopHocSinh.MaLop, models.LopHocSinh.MaHocSinh)
@@ -398,7 +449,7 @@ def LoadLop(malop, key, mamonhoc=None, mahocki=None):
 
         return dshocsinh
 
-    if key == "diem" and mamonhoc:
+    if key == "diem":
 
         max15phut = 0
         max1tiet = 0
@@ -407,7 +458,7 @@ def LoadLop(malop, key, mamonhoc=None, mahocki=None):
             hs_diem = {
                 "MaHocSinh": hs.MaHocSinh,
                 "HoTen": GetUserInforByUserID(hs.MaHocSinh),
-                **LoadHSinfo(hs.MaHocSinh, key="diem", typediem=TypeDiem, mamonhoc=mamonhoc, mahocki=mahocki)
+                **LoadHSinfo(hs.MaHocSinh, key="diem", mamonhoc=mamonhoc, mahocki=mahocki)
             }
             dshocsinh.append(hs_diem)
 
@@ -421,7 +472,7 @@ def LoadLop(malop, key, mamonhoc=None, mahocki=None):
         }
 
 
-def LoadHSinfo(mahocsinh, key, typediem=TypeDiem, mamonhoc=None, mahocki=None):
+def LoadHSinfo(  mahocsinh ,key , mamonhoc = None, mahocki = None):
     if key == "info":
         inforhocsinh = (db.session.query(models.UserInfor.UserID, models.UserInfor.Ho, models.UserInfor.Ten,
                                          models.HocSinh.DiemTbDauVao, models.UserInfor.GioiTinh,
@@ -432,7 +483,7 @@ def LoadHSinfo(mahocsinh, key, typediem=TypeDiem, mamonhoc=None, mahocki=None):
                         .all())
         return inforhocsinh
 
-    if key == "diem" and typediem:
+    if key == "diem":
 
         diem15phut = []
         diem1tiet = []
@@ -598,15 +649,15 @@ def them():
 
 if __name__ == '__main__':
     with app.app_context():
-        lop_hocsinh = LoadLop(malop = 'L10A1_2023',key = "diem",  mamonhoc='MH1', mahocki=1)
-
-        # for i in lophocsinh:
-        #     print(i)
+        # lop_hocsinh = LoadLop(malop = 'L10A1_2023',key = "diem",  mamonhoc='MH1', mahocki=1)
         #
-        for i in lop_hocsinh['diemdshocsinh']:
-            print(f"mahocsinh: {i['MaHocSinh']} , hoten : {i['HoTen']} , 15phut : {i['15phut']} , 1tiet : {i['1tiet']} , cuoiki : {i['diemthi']}")
-
+        # # for i in lophocsinh:
+        # #     print(i)
         # #
+        # for i in lop_hocsinh['diemdshocsinh']:
+        #     print(f"mahocsinh: {i['MaHocSinh']} , hoten : {i['HoTen']} , 15phut : {i['15phut']} , 1tiet : {i['1tiet']} , cuoiki : {i['diemthi']}")
+        #
+        # # #
         # # for i in lophocsinh:
         # #     print(i)
         #
@@ -679,3 +730,6 @@ if __name__ == '__main__':
         # print(f"kq: {int(tb)} , type : {type(tb)}")
         # solop = ceil((Cnt_Sum_HocSinh_Not_Lop() / app.config["MAX_SS_LOP"]))
         # print(solop)
+
+
+        print(int(CurrentYear()) - int(datetime.strptime("2024-02-12", '%Y-%m-%d').year))

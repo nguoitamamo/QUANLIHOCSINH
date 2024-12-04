@@ -1,5 +1,3 @@
-
-
 function LoadLopOfKhoi(makhoi) {
 
 
@@ -18,5 +16,23 @@ function LoadLopOfKhoi(makhoi) {
         })
 
 
-    alert(tenkhoi);
+}
+
+
+function SearchHocSinh(input) {
+
+    alert(input)
+    fetch(`/user/danhsachlop/timkiemhocsinh/${input}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+
+    }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            }
+        })
+
 }

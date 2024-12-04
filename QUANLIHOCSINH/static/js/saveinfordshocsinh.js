@@ -17,9 +17,7 @@ function UpdateSdt(stt, obj) {
 
 
 function RemoveHocSinh(stt) {
-    if (!confirm("Bạn có chắc chắn muốn xóa học sinh này không?")) {
-        return;
-    }
+
     fetch(`/user/uploaddanhsachhocsinh/removehocsinh/${stt}`, {
         method: 'delete',
         headers: {

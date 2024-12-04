@@ -9,6 +9,21 @@
             width: 200px;
             border-radius: 10px;
         }
+
+        .btn_timkiem {
+            width: 350px;
+            height: 50px;
+            border: 1px solid;
+            border-radius: 10px;
+        }
+
+        .stt,
+        .hoten,
+        .gioitinh,
+        .diachi,
+        .namsinh {
+            width: 20%;
+        }
     </style>
 
 {% endblock %}
@@ -25,6 +40,15 @@
                                                  href="{{ url_for('lapdanhsachlop',page = i) }}">{{ i }}</a></li>
                     {% endfor %}
                 </div>
+                <div>
+                    <input type="text" class="btn btn_timkiem"
+                           value="{{ input }}"
+                           placeholder="Huỳnh A, huynhngoctruong@gmail.com, sdt, ...">
+                    <button class="btn btn-sua" onclick="SearchHocSinh(document.querySelector('.btn_timkiem').value)">
+                        Tìm kiếm
+                    </button>
+                </div>
+
 
                 <div>
                     <button class="btn btn-sua"><a href="{{ url_for('dieuchinhdanhsachlop') }}"
@@ -41,34 +65,39 @@
     <div class="container mt-3">
         <h2>Lớp: {{ lop }}</h2>
         <p>Sĩ số: {{ lophocsinh | length }}</p>
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th>STT</th>
-                <th>Họ tên</th>
-                <th>Giới tính</th>
-                <th>Năm sinh</th>
-                <th>Địa chỉ</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for hocsinh in lophocsinh %}
-                {% for info in hocsinh %}
+        <div>
+            <table class="table table-striped" style="width: 100%; border-collapse: collapse; margin-bottom: 0">
+                <thead>
+                <tr>
+                    <th class="stt">STT</th>
+                    <th class="hoten">Họ tên</th>
+                    <th class="gioitinh">Giới tính</th>
+                    <th class="namsinh">Năm sinh</th>
+                    <th class="diachi">Địa chỉ</th>
+                </tr>
+                </thead>
+            </table>
+            <div style="height: 450px; overflow-y: auto; margin-bottom: 50px">
+                <table class="table table-striped custom-table">
+                    <tbody>
+                    {% for hocsinh in lophocsinh %}
+                        <tr>
+                            <td class="stt">{{ loop.index }}</td>
+                            {% for info in hocsinh %}
 
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td>{{ info.Ho }} {{ info.Ten }}</td>
-                        <td>{{ info.GioiTinh }}</td>
-                        <td>{{ info.NgaySinh.strftime('%Y') }}</td>
-                        <td>{{ info.DiaChi }}</td>
-                    </tr>
+                                <td class="hoten">{{ info.Ho }} {{ info.Ten }}</td>
+                                <td class="gioitinh">{{ info.GioiTinh }}</td>
+                                <td class="namsinh">{{ info.NgaySinh.strftime('%Y') }}</td>
+                                <td class="diachi">{{ info.DiaChi }}</td>
 
-                {% endfor %}
-            {% endfor %}
-            </tbody>
-        </table>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-
 
     <script src="{{ url_for('static', filename = 'js/lapdanhsachlop.js') }}"></script>
 
