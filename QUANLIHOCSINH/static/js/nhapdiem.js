@@ -114,73 +114,65 @@ function GetDataTable() {
 }
 
 
-function Suggestion(keyword, searchInput, suggestionsList, field) {
-
-    let malop = 'lop'
-
-    if (field === 'monhoc') {
-        const lop = document.getElementById('dslop');
-        malop = lop.value;
-
-        console.log("Monhoc" + malop);
-    }
-
-    fetch(`/user/nhapdiem/lop/search/${keyword}/${field}/${malop}`)
-        .then(response => response.json())
-        .then(data => {
-
-            suggestionsList.innerHTML = '';
-
-            data.forEach(suggestionEdOfKeyword => {
-                suggestionEdOfKeyword.forEach(item => {
-
-                    const li = document.createElement('li');
-                    li.textContent = item;
-
-                    li.addEventListener('click', () => {
-                        searchInput.value = item;
-                        suggestionsList.innerHTML = '';
-
-
-                        for (let i = 0; i < lop.options.length; i++) {
-                            if (lop.options[i].text === searchInputLop.value) {
-                                lop.selectedIndex = i;
-
-                                break;
-                            }
-                        }
-                        LoadMonOfLop();
-
-                    });
-
-                    suggestionsList.appendChild(li);
-                });
-            });
-        })
-}
+// function Suggestion(keyword, searchInput, suggestionsList, field) {
+//
+//     let malop = 'lop'
+//
+//     if (field === 'monhoc') {
+//         const lop = document.getElementById('dslop');
+//         malop = lop.value;
+//
+//         console.log("Monhoc" + malop);
+//     }
+//
+//     fetch(`/user/nhapdiem/lop/search/${keyword}/${field}/${malop}`)
+//         .then(response => response.json())
+//         .then(data => {
+//
+//             suggestionsList.innerHTML = '';
+//
+//             data.forEach(suggestionEdOfKeyword => {
+//                 suggestionEdOfKeyword.forEach(item => {
+//
+//                     const li = document.createElement('li');
+//                     li.textContent = item;
+//
+//                     li.addEventListener('click', () => {
+//                         searchInput.value = item;
+//                         suggestionsList.innerHTML = '';
+//
+//
+//                         for (let i = 0; i < lop.options.length; i++) {
+//                             if (lop.options[i].text === searchInputLop.value) {
+//                                 lop.selectedIndex = i;
+//
+//                                 break;
+//                             }
+//                         }
+//                         LoadMonOfLop();
+//
+//                     });
+//
+//                     suggestionsList.appendChild(li);
+//                 });
+//             });
+//         })
+// }
 
 
 searchInputLop.addEventListener('input', () => {
-    const keyword = searchInputLop.value.trim();
-    if (keyword.length === 0) {
-        suggestionsListLop.innerHTML = '';
-        return;
-    }
 
-    Suggestion(keyword, searchInputLop, suggestionsListLop, 'lop')
+    for (let i = 0; i < lop.options.length; i++) {
+        if (lop.options[i].text === searchInputLop.value) {
+            lop.selectedIndex = i;
+
+            break;
+        }
+    }
+    LoadMonOfLop();
 
 });
 
-searchInputMon.addEventListener('input', () => {
-    const keyword = searchInputMon.value.trim();
-    if (keyword.length === 0) {
-        suggestionsListMon.innerHTML = '';
-        return;
-    }
-
-    Suggestion(keyword, searchInputMon, suggestionsListMon, 'monhoc')
-
-});
 
 function updateLabel(selectElement, inputId) {
 
@@ -257,6 +249,16 @@ function LoadMonOfLop() {
         .then(data => {
             if (data.success) {
                 const monhocs = data.dsmonhoc;
+
+                const monHocDataList = document.getElementById('monhocLabels');
+
+                monHocDataList.innerHTML = ''
+                monhocs.forEach(mon => {
+                    const option = document.createElement("option");
+                    option.value = `${mon.TenMonHoc}`;
+                    monHocDataList.appendChild(option);
+                });
+
 
                 const monHocSelect = document.querySelector("select[name='dsmonhoc']");
 

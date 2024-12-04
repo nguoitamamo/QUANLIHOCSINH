@@ -154,14 +154,13 @@ def capnhatthongtin():
 
 @app.route('/user/lapdanhsachlop')
 def lapdanhsachlop():
-    if dao.Cnt_Sum_HocSinh_Not_Lop() > int(10):
-        solop = ceil((dao.Cnt_Sum_HocSinh_Not_Lop() / app.config["MAX_SS_LOP"]))
+
+    solop = (dao.SoLop(app.config["MAX_SS_LOP"]))
+
+    if dao.Cnt_Sum_HocSinh_Not_Lop() > ( solop*app.config["MAX_SS_LOP"] - dao.CntSiSoLopCurrent(solop = solop, key = 'L10A')):
+        solop = ceil((dao.Cnt_Sum_HocSinh_Not_Lop() /app.config["MAX_SS_LOP"] ))
         dao.Division_Class(solop)
 
-    else:
-
-        solop = (dao.SoLop(app.config["MAX_SS_LOP"]))
-        print(solop)
 
     page = request.args.get('page', 1)
     malop = 'L10A' + str(page) + '_' + dao.CurrentYear()
@@ -404,7 +403,10 @@ def savehocsinhtosession(id):
 def addhocsinhtolop(tenlop):
     try:
 
+
+
         for i in session['dshocsinhnotlop']:
+            print(i)
             dao.addHocSinhToLop(mahocsinh=i, malop='L' + str(tenlop) + '_' + dao.CurrentYear())
 
         session.get('dshocsinhnotlop').clear()
@@ -413,7 +415,7 @@ def addhocsinhtolop(tenlop):
         return jsonify({"success": True})
 
     except Exception as ex:
-        return jsonify({"success": False})
+        return jsonify({"success": False, "error" : "Lớp đã đầy!"})
 
 
 @app.route('/user/dieuchinhdanhsachlop/removehocsinh/<id>', methods=["POST"])
@@ -711,23 +713,22 @@ def getinfolop():
 
         if data['searchhocsinh']:
 
-            hocsinh = dao.GetHocSinhByTenEmailPhone(inputsearch = data['searchhocsinh'])
+            hocsinhs = dao.GetHocSinhByTenHoTenEmailPhone(inputsearch = data['searchhocsinh'], malop=data['dslop'])
 
-            if hocsinh:
+            for hs in hocsinhs:
                 hs_diem = {
-                    "MaHocSinh": hocsinh['MaHocSinh'],
-                    "HoTen": hocsinh['HoTen'],
-                    **dao.LoadHSinfo(hocsinh['MaHocSinh'], key="diem",  mamonhoc=mamonhoc, mahocki=mahocki)
+                    "MaHocSinh": hs['MaHocSinh'],
+                    "HoTen": hs['HoTen'],
+                    **dao.LoadHSinfo(hs['MaHocSinh'], key="diem",  mamonhoc=mamonhoc, mahocki=mahocki)
                 }
                 dshocsinh.append(hs_diem)
-                for i in dshocsinh:
-                    max15phut = len(i['15phut'])
-                    max1tiet = len(i['1tiet'])
+
+                max15phut = max(max15phut, len(hs_diem['15phut']))
+                max1tiet = max(max1tiet, len(hs_diem['1tiet']))
 
 
-            else:
-                return render_template('nhapdiem.html',
-                                       dslopcheckbox=dslop, **data, malop =data['dslop'])
+
+
         else:
 
             dshocsinh = dao.LoadLop(malop=data['dslop'], key="diem", mamonhoc=mamonhoc, mahocki=mahocki)
@@ -748,8 +749,9 @@ def getinfolop():
 
         session.modified = True
 
+
         return render_template('nhapdiem.html', dshocsinh=dshocsinh,
-                                   dslopcheckbox=dslop, **data, malop =data['dslop'])
+                                   dslopcheckbox=dslop, malop =data['dslop'],  **data)
 
     return redirect(url_for('index'))
 
@@ -764,29 +766,29 @@ def baocaothongke():
     return render_template("baocaothongke.html")
 
 
-@app.route('/user/nhapdiem/lop/search/<keyword>/<field>/<malop>', methods=['GET'])
-def search(keyword, field, malop):
-    if field == "lop":
-        lop = dao.LoadLopEdHoc()
-
-        dslop = [i.TenLop for i in lop]
-
-        print(dslop)
-
-        suggestionEdOfKeyword = utils.SuggestedLop(ds=dslop, keyword=keyword)
-
-        print(suggestionEdOfKeyword)
-
-    elif field == "monhoc":
-
-        monhocs = dao.LoadMonHocOfLop(malop)
-
-        # monhocs là list trong list - > chuyển về string trong list
-        monhocs = list(itertools.chain(*monhocs))
-
-        suggestionEdOfKeyword = utils.SuggestedLop(ds=monhocs, keyword=keyword)
-
-    return jsonify(suggestionEdOfKeyword)
+# @app.route('/user/nhapdiem/lop/search/<keyword>/<field>/<malop>', methods=['GET'])
+# def search(keyword, field, malop):
+#     if field == "lop":
+#         lop = dao.LoadLopEdHoc()
+#
+#         dslop = [i.TenLop for i in lop]
+#
+#         print(dslop)
+#
+#         suggestionEdOfKeyword = utils.SuggestedLop(ds=dslop, keyword=keyword)
+#
+#         print(suggestionEdOfKeyword)
+#
+#     elif field == "monhoc":
+#
+#         monhocs = dao.LoadMonHocOfLop(malop)
+#
+#         # monhocs là list trong list - > chuyển về string trong list
+#         monhocs = list(itertools.chain(*monhocs))
+#
+#         suggestionEdOfKeyword = utils.SuggestedLop(ds=monhocs, keyword=keyword)
+#
+#     return jsonify(suggestionEdOfKeyword)
 
 
 @app.route('/user/danhsachlop')

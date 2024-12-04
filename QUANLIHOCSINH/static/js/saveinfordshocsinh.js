@@ -16,6 +16,13 @@ function UpdateSdt(stt, obj) {
 }
 
 
+function UpdateNgaySinh(stt, obj) {
+
+    alert(stt + " "  + obj.value)
+
+}
+
+
 function RemoveHocSinh(stt) {
 
     fetch(`/user/uploaddanhsachhocsinh/removehocsinh/${stt}`, {
@@ -56,7 +63,6 @@ function SaveInforDshocsinh() {
 
 
 function RemoveHS(MaHocSinh, TenLop) {
-
 
 
     fetch(`/user/dieuchinhdanhsachlop/removehocsinh/${TenLop}/${MaHocSinh}`, {
@@ -105,7 +111,6 @@ function CheckAddHocSinh(id, obj) {
 function AddHocSinhToLop(tenlop) {
 
 
-
     fetch(`/user/dieuchinhdanhsachlop/addhocsinh/ds/${tenlop}`, {
         method: 'POST',
         headers: {
@@ -117,17 +122,20 @@ function AddHocSinhToLop(tenlop) {
             if (data.success) {
                 window.location.reload();
             }
+            else {
+                errorText.innerText = data.error;
+                errorContainer.style.display = "block";
+            }
         })
 
 }
 
-window.onload = function() {
+window.onload = function () {
     const checkboxes = document.querySelectorAll('.form-check-input');
     checkboxes.forEach(checkbox => {
         checkbox.checked = false;
     });
 }
-
 
 
 function SelectKhoi(obj) {

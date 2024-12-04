@@ -215,6 +215,9 @@ def Cnt_Sum_HocSinh_Not_Lop():
     return so_luong_hoc_sinh_chua_co_lop
 
 
+
+
+
 def Cnt_Sum_Lop(khoi):
     return db.session.query(func.count(models.Lop.MaKhoi)).filter(models.Khoi.MaKhoi.__eq__(khoi)).scalar()
 
@@ -279,7 +282,16 @@ def UpdateSiSo(MaLop, SiSo):
 #
 #     remaining = HocSinhNotLop(sohocsinhconlai) if sohocsinhconlai > 0 else []
 #
-#     return Insert_HS_Remain(sohocsinhconlai, solopcanchia - 1, tb, remaining)
+#     return Insert_HS_Remain(sohocsinhconlai, solopcanchia - 1, tb, remaining)dd
+
+
+# def CreateLop(solopcanchia):
+#     namht = CurrentYear()
+#
+#     for i in range(1, solopcanchia + 1):
+#         lop = models.Lop(MaLop="L10A" + str(i) + "_" + namht, TenLop="10A" + str(i), SiSo=int(tb), MaKhoi="1")
+#         db.session.add(lop)
+#         db.session.commit()
 
 
 def Division_Class(solopcanchia):
@@ -289,7 +301,7 @@ def Division_Class(solopcanchia):
 
     lopbd = int(bd / tb)
 
-    namht = str(datetime.now().year)
+    namht = CurrentYear()
 
     if tb > app.config["MAX_SS_LOP"]:
         return 0
@@ -344,6 +356,9 @@ def GetLopByMa(malop):
         models.Lop.MaLop == malop).first()
 
 
+
+
+
 def GetMonHoc(mamonhoc=None, tenmonhoc=None):
     return (
         db.session.query(models.MonHoc.TenMonHoc, models.MonHoc.MaMonHoc)
@@ -356,28 +371,49 @@ def GetMonHoc(mamonhoc=None, tenmonhoc=None):
         .first()
     )
 
-def GetIDByPhone(number):
-    return db.session.query(models.Phone.UserID).filter(models.Phone.Number == number).first()
 
-def GetIDByEmail(email):
-    return db.session.query(models.UserInfor.UserID, models.UserInfor.Ho , models.UserInfor.Ten).filter(
-            models.UserInfor.Email == email).first()
+def GetIDByPhone(number, malop):
+    return (db.session.query(models.Phone.UserID).join(models.LopHocSinh, models.LopHocSinh.MaLop == malop)
+            .filter(models.Phone.Number == number).first())
 
 
-def GetHocSinhByTenEmailPhone(inputsearch):
+def GetIDByHoTenEmail(inputsearch, malop):
 
-    phone = GetIDByPhone(inputsearch)
+    return (db.session.query(
+        models.UserInfor.UserID,
+        models.UserInfor.Ho,
+        models.UserInfor.Ten
+    ).join(models.LopHocSinh, models.LopHocSinh.MaHocSinh == models.UserInfor.UserID)
+     .filter(
+         models.LopHocSinh.MaLop == malop,
+         or_(
+             func.concat(models.UserInfor.Ho, models.UserInfor.Ten).ilike(f"%{inputsearch}%"),
+             models.UserInfor.Email == inputsearch
+         )
+    ).all())
+
+
+
+
+def GetHocSinhByTenHoTenEmailPhone(inputsearch, malop):
+
+    inputsearch = inputsearch.replace(" ", "")
+
+    res = []
+
+    phone = GetIDByPhone(inputsearch, malop)
     if phone:
-        return {"MaHocSinh": phone.UserID,
-                "HoTen": GetUserInforByUserID(phone.UserID)}
 
-    hoten = GetIDByEmail(inputsearch)
+        res.append( {"MaHocSinh": phone.UserID,
+                    "HoTen": GetUserInforByUserID(phone.UserID)})
 
-    if hoten:
-        return {"MaHocSinh": hoten.UserID,
-                "HoTen": hoten.Ho + ' ' + hoten.Ten}
+        return res
 
-    return None
+    for user in GetIDByHoTenEmail(inputsearch, malop):
+        res.append( {"MaHocSinh": user.UserID,
+                     "HoTen": user.Ho + ' ' + user.Ten})
+
+    return res
 
 
 # def GetHocSinhByTenEmailPhone(inputsearch):
@@ -424,11 +460,8 @@ def AddPermissionUser(permissionid, userid):
 
 
 def GetUserInforByUserID(userid):
-    user =  db.session.query(models.UserInfor.Ho, models.UserInfor.Ten).filter(models.UserInfor.UserID == userid).first()
+    user = db.session.query(models.UserInfor.Ho, models.UserInfor.Ten).filter(models.UserInfor.UserID == userid).first()
     return user.Ho + " " + user.Ten
-
-
-
 
 
 class TypeDiem(Enum):
@@ -437,8 +470,7 @@ class TypeDiem(Enum):
     CUOIKI = "cuối kì"
 
 
-
-def LoadLop(malop, key, mamonhoc = None, mahocki = None):
+def LoadLop(malop, key, mamonhoc=None, mahocki=None):
     dshocsinh = []
 
     hocsinh = (db.session.query(models.LopHocSinh.MaLop, models.LopHocSinh.MaHocSinh)
@@ -472,7 +504,7 @@ def LoadLop(malop, key, mamonhoc = None, mahocki = None):
         }
 
 
-def LoadHSinfo(  mahocsinh ,key , mamonhoc = None, mahocki = None):
+def LoadHSinfo(mahocsinh, key, mamonhoc=None, mahocki=None):
     if key == "info":
         inforhocsinh = (db.session.query(models.UserInfor.UserID, models.UserInfor.Ho, models.UserInfor.Ten,
                                          models.HocSinh.DiemTbDauVao, models.UserInfor.GioiTinh,
@@ -547,11 +579,20 @@ def CheckHocSinhExitsLop(mahocsinh, malop):
 
 
 def addHocSinhToLop(mahocsinh, malop):
-    lophocsinh = models.LopHocSinh(MaHocSinh=mahocsinh, MaLop=malop, NamTaoLop=CurrentYear())
-    db.session.add(lophocsinh)
-    db.session.commit()
-    return True
 
+    lop = GetLopByMa(malop)
+    print(lop)
+    print(type(lop.SiSo))
+    if lop.SiSo < 40:
+        lop.SiSo = lop.SiSo + 1
+        lophocsinh = models.LopHocSinh(MaHocSinh=mahocsinh, MaLop=malop, NamTaoLop=CurrentYear())
+        db.session.add(lophocsinh)
+
+        db.session.commit()
+        return True
+
+
+    return False
 
 def AddDiemHocSinhList(maHocSinh, mamonhoc, mahocki, typeDiem, diemListNew):
     diemListOLd = GetDiemExit(mahocsinh=maHocSinh, mamonhoc=mamonhoc, mahocki=mahocki, typeDiem=typeDiem)
@@ -560,11 +601,10 @@ def AddDiemHocSinhList(maHocSinh, mamonhoc, mahocki, typeDiem, diemListNew):
 
     cntdiemold = len(diemListOLd)
 
-
     for i in range(1, cntdiemnew + 1):
 
-        if diemListNew[i-1] and i <= cntdiemold and diemListOLd[i-1].SoDiem != diemListNew[i-1] :
-            diemListOLd[i-1].SoDiem = diemListNew[i-1]
+        if diemListNew[i - 1] and i <= cntdiemold and diemListOLd[i - 1].SoDiem != diemListNew[i - 1]:
+            diemListOLd[i - 1].SoDiem = diemListNew[i - 1]
             db.session.commit()
 
         else:
@@ -574,7 +614,7 @@ def AddDiemHocSinhList(maHocSinh, mamonhoc, mahocki, typeDiem, diemListNew):
                     mamonhoc=mamonhoc,
                     mahocki=mahocki,
                     typediem=typeDiem,
-                    sodiem=diemListNew[i-1]
+                    sodiem=diemListNew[i - 1]
                 )
 
 
@@ -601,6 +641,13 @@ def AddDiemHocSinh(mahocsinh, mamonhoc, mahocki, typediem, sodiem):
 def SoLop(maxsslop):
     return ceil(
         db.session.query(models.LopHocSinh).filter(models.LopHocSinh.NamTaoLop == CurrentYear()).count() / maxsslop)
+
+
+
+def CntSiSoLopCurrent(solop, key):
+
+    cntalllopcurrentyear = sum(GetLopByMa(malop = key + str(i) + '_' +CurrentYear()).SiSo for i in range(1, solop+ 1))
+    return cntalllopcurrentyear
 
 
 def Solop1(maxsslop):
@@ -731,5 +778,4 @@ if __name__ == '__main__':
         # solop = ceil((Cnt_Sum_HocSinh_Not_Lop() / app.config["MAX_SS_LOP"]))
         # print(solop)
 
-
-        print(int(CurrentYear()) - int(datetime.strptime("2024-02-12", '%Y-%m-%d').year))
+        print((GetLopByMa( malop = 'L10A1_2024').SiSo))

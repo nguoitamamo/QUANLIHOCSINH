@@ -44,7 +44,12 @@
 
 
 {% block content %}
-
+    <div class="container col-5 mt-3">
+        <div class="alert alert-danger alert-dismissible" style="display: none">
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <strong id="error"></strong>
+        </div>
+    </div>
 
     {% if dshocsinhnotlop %}
         <div class="container">
@@ -114,7 +119,6 @@
     {% if solop %}
         <div class="container mt-3">
             <ul class="pagination">
-                <li class="page-item"><a class="page-link" href="#">Khối</a></li>
                 <li class="page-item" style="margin-left: 5px;"><a class="page-link" href="#">Lớp</a></li>
                 {% for i in range(1, solop + 1) %}
                     <li class="page-item"><a class="page-link"
