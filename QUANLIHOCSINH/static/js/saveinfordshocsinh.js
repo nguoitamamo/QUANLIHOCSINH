@@ -16,13 +16,6 @@ function UpdateSdt(stt, obj) {
 }
 
 
-function UpdateNgaySinh(stt, obj) {
-
-    alert(stt + " "  + obj.value)
-
-}
-
-
 function RemoveHocSinh(stt) {
 
     fetch(`/user/uploaddanhsachhocsinh/removehocsinh/${stt}`, {
@@ -78,7 +71,6 @@ function RemoveHS(MaHocSinh, TenLop) {
                 if (row) {
                     row.remove();
                 }
-                alert("thành công")
                 window.location.reload();
             } else {
                 alert("Xóa không thành công!")
@@ -86,17 +78,18 @@ function RemoveHS(MaHocSinh, TenLop) {
         })
 }
 
-function CheckAddHocSinh(id, obj) {
+function CheckAddHocSinh(hocsinhid, obj) {
 
     if (obj.checked) {
-        fetch(`/user/dieuchinhdanhsachlop/addhocsinh/${id}`, {
+        console.log(hocsinhid);
+        fetch(`/user/dieuchinhdanhsachlop/addhocsinh/${hocsinhid}`, {
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
             }
         })
     } else {
-        fetch(`/user/dieuchinhdanhsachlop/removehocsinh/${id}`, {
+        fetch(`/user/dieuchinhdanhsachlop/removehocsinh/${hocsinhid}`, {
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
@@ -121,8 +114,10 @@ function AddHocSinhToLop(tenlop) {
         .then(data => {
             if (data.success) {
                 window.location.reload();
-            }
-            else {
+            } else {
+
+                const errorContainer = document.querySelector('.alert-danger');
+                const errorText = document.getElementById('error');
                 errorText.innerText = data.error;
                 errorContainer.style.display = "block";
             }
@@ -155,5 +150,134 @@ function SelectKhoi(obj) {
                 window.location.reload();
             }
         })
+
+}
+
+
+function DevisionClassBegin0() {
+
+    fetch('/user/dieuchinhdanhsachlop/sapxeptudau', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            }
+        })
+
+}
+
+
+function CreateLop(solop) {
+
+
+    alert(solop)
+}
+
+
+// function CheckAddAllHocSinh(obj) {
+//
+//     // if( obj.checked) {
+//         const dschecbox = document.querySelectorAll('.form-check-input-creatlop');
+//
+//         dschecbox.forEach(checkbox => {
+//             checkbox.checked = obj.checked;
+//
+//             const checkboxId = checkbox.getAttribute('id')
+//
+//             if (checkboxId) {
+//                 CheckAddHocSinh(checkboxId, checkbox)
+//             }
+//         });
+//     // }
+//
+//
+// }
+
+
+function CreateLopWithDsHocSinh() {
+
+    const tenlop = document.getElementById('tenlop').value.trim();
+    fetch(`/user/dieuchinhdanhsachlop/taolop/ds/${tenlop}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            }
+        })
+
+}
+
+
+function FindOfCondition() {
+    const selectcondition = document.getElementById('selectcondition').value;
+    const textcondition = document.getElementById('textcondition').value.trim();
+
+
+    const value = parseFloat(textcondition);
+
+
+    const rows = document.querySelectorAll('.container-dshoc-notlop tbody tr');
+
+    rows.forEach(row => {
+        const diemCell = row.querySelector('.diem');
+        if (!diemCell) return;
+
+        const diem = parseFloat(diemCell.textContent);
+
+        let match = false;
+        switch (selectcondition) {
+            case '1':
+                match = diem > value;
+                break;
+            case '2':
+                match = diem < value;
+                break;
+            case '3':
+                match = diem >= value;
+                break;
+            case '4':
+                match = diem <= value;
+                break;
+        }
+
+        if (match) {
+            row.classList.add('highlight-row');
+        }else {
+            row.classList.remove('highlight-row');
+        }
+    });
+}
+
+
+
+function FindHocSinhAllLop() {
+
+    const textinput = document.getElementById('inputsearch').value.trim();
+
+
+     fetch(`/user/dieuchinhdanhsachlop/timkiem/dshocsinh/${textinput}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            }
+        })
+
 
 }

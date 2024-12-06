@@ -8,6 +8,11 @@ from flask_login import LoginManager
 
 app = Flask(__name__, template_folder='templates')
 app.config["SECRET_KEY"] = "hnt"
+
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = True
+
+
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:594362@localhost/QUANLIHOCSINHFINAL"
 app.config["PAGE_SIZE"] = 1
 

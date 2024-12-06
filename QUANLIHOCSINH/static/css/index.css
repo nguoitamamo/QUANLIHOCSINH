@@ -141,7 +141,8 @@ main {
 .login-form input[type="password"],
 .login-form input[type="email"],
 .modal-body form div input[type="email"],
-.modal-body form div input[type="password"] {
+.modal-body form div input[type="password"],
+.modal-body form div input[type="text"] {
     width: 82%;
     height: 30px;;
     padding: 10px;

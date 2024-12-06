@@ -155,11 +155,17 @@ def capnhatthongtin():
 @app.route('/user/lapdanhsachlop')
 def lapdanhsachlop():
 
-    solop = (dao.SoLop(app.config["MAX_SS_LOP"]))
+    solop = len(dao.GetMaLop(dao.CurrentYear()))
 
-    if dao.Cnt_Sum_HocSinh_Not_Lop() > ( solop*app.config["MAX_SS_LOP"] - dao.CntSiSoLopCurrent(solop = solop, key = 'L10A')):
-        solop = ceil((dao.Cnt_Sum_HocSinh_Not_Lop() /app.config["MAX_SS_LOP"] ))
-        dao.Division_Class(solop)
+    sum_hoc_sinh_not_lop = dao.Cnt_Sum_HocSinh_Not_Lop() #tổng học sinh not lớp
+    sum_siso_all_lop_current = dao.CntSiSoLopCurrent(solop = solop, key = 'L10A') #tổng học sinh của tất các các lớp
+    sum_all_hoc_sinh_all_lop = solop*app.config["MAX_SS_LOP"] # max sĩ số all lớp
+
+    if  sum_hoc_sinh_not_lop > ( sum_all_hoc_sinh_all_lop - sum_siso_all_lop_current ):
+        solop = ceil(sum_hoc_sinh_not_lop/app.config["MAX_SS_LOP"])
+        solopthem = ceil(  (sum_all_hoc_sinh_all_lop - sum_siso_all_lop_current + sum_hoc_sinh_not_lop ) / app.config["MAX_SS_LOP"] )
+
+        dao.Division_Class(solopcanchia=solop, solopthem=solopthem)
 
 
     page = request.args.get('page', 1)
@@ -371,7 +377,7 @@ def dieuchinhdanhsachlop():
         session.get('dshocsinhnotlop').clear()
         session.modified = True
 
-    solop = int(dao.SoLop((app.config["MAX_SS_LOP"])))
+    solop = len(dao.GetMaLop(dao.CurrentYear()))
 
     page = int(request.args.get('page', 1))
 
@@ -379,7 +385,10 @@ def dieuchinhdanhsachlop():
 
     lophocsinh = dao.LoadLop(malop=malop, key="info")
 
+
     dshocsinhnotlop = dao.HocSinhNotLop()
+
+    print(dshocsinhnotlop)
 
     return render_template("dieuchinhdanhsachlop.html", lophocsinh=lophocsinh,
                            solop=solop,
@@ -388,14 +397,16 @@ def dieuchinhdanhsachlop():
 
 
 
-@app.route('/user/dieuchinhdanhsachlop/addhocsinh/<id>', methods=["POST"])
-def savehocsinhtosession(id):
+@app.route('/user/dieuchinhdanhsachlop/addhocsinh/<hocsinhid>', methods=["POST"])
+def savehocsinhtosession(hocsinhid):
     if "dshocsinhnotlop" not in session:
         session['dshocsinhnotlop'] = []
 
-    if id not in session.get('dshocsinhnotlop'):
-        session['dshocsinhnotlop'].append(id)
+    if hocsinhid not in session.get('dshocsinhnotlop'):
+        session['dshocsinhnotlop'].append(hocsinhid)
+
         session.modified = True
+
         return jsonify({"success": True})
 
 
@@ -403,11 +414,12 @@ def savehocsinhtosession(id):
 def addhocsinhtolop(tenlop):
     try:
 
-
-
         for i in session['dshocsinhnotlop']:
             print(i)
-            dao.addHocSinhToLop(mahocsinh=i, malop='L' + str(tenlop) + '_' + dao.CurrentYear())
+
+        bool = dao.addHocSinhToLop(listmahocsinh = session.get("dshocsinhnotlop"), malop='L' + str(tenlop) + '_' + dao.CurrentYear())
+        if not bool:
+            return jsonify({"success": False, "error": "Lớp đã đầy!"})
 
         session.get('dshocsinhnotlop').clear()
         session.modified = True
@@ -418,10 +430,10 @@ def addhocsinhtolop(tenlop):
         return jsonify({"success": False, "error" : "Lớp đã đầy!"})
 
 
-@app.route('/user/dieuchinhdanhsachlop/removehocsinh/<id>', methods=["POST"])
-def removehocsinhtosession(id):
+@app.route('/user/dieuchinhdanhsachlop/removehocsinh/<hocsinhid>', methods=["POST"])
+def removehocsinhtosession(hocsinhid):
     for index, i in enumerate(session['dshocsinhnotlop']):
-        if i == id:
+        if i == hocsinhid:
             session['dshocsinhnotlop'].pop(index)
             session.modified = True
 
@@ -717,7 +729,7 @@ def getinfolop():
 
             for hs in hocsinhs:
                 hs_diem = {
-                    "MaHocSinh": hs['MaHocSinh'],
+                    "UserID": hs['MaHocSinh'],
                     "HoTen": hs['HoTen'],
                     **dao.LoadHSinfo(hs['MaHocSinh'], key="diem",  mamonhoc=mamonhoc, mahocki=mahocki)
                 }
@@ -823,6 +835,55 @@ def danhsachlop():
 #
 #
 #
+
+
+@app.route('/user/dieuchinhdanhsachlop/sapxeptudau', methods = ['POST'])
+def sapxeptudau():
+
+    dao.RemoveDshocsinhAllOfCurrentyear()
+
+    lapdanhsachlop()
+
+    return jsonify({"success": True})
+
+
+
+@app.route('/user/dieuchinhdanhsachlop/taolop/ds/<tenlop>', methods=['POST'])
+def taolop(tenlop):
+
+    for i in session.get('dshocsinhnotlop'):
+        print(i)
+
+    if session.get('dshocsinhnotlop'):
+
+        dao.CreateLop(tenlop=tenlop, listhocsinh = session.get('dshocsinhnotlop'))
+    else:
+        listidhocsinh = [[info.UserID for info in hs] for hs in dao.HocSinhNotLop()]
+        dao.CreateLop(tenlop= tenlop, listhocsinh = listidhocsinh)
+
+    return jsonify({"success": True})
+
+
+
+@app.route('/user/dieuchinhdanhsachlop/timkiem/dshocsinh', methods=['POST','GET'])
+def timkkiemhocsinhalllop():
+    if request.method == 'POST':
+        textinput = request.form.get('textinput')
+
+        currentyear = dao.CurrentYear()
+
+        hocsinhs = dao.GetHocSinhByTenHoTenEmailPhone(inputsearch=textinput, namtaolop=currentyear)
+
+
+        dshocsinh = [ dao.LoadHSinfo(hs['MaHocSinh'], key="info" , keytimkiem="timkiem") for hs in hocsinhs ]
+
+        solop = len(dao.GetMaLop(dao.CurrentYear()))
+
+        dshocsinhnotlop = dao.HocSinhNotLop()
+
+        return render_template("dieuchinhdanhsachlop.html", lophocsinh=dshocsinh,
+                               solop=solop, dshocsinhnotlop=dshocsinhnotlop,
+                               key="timkiem", textinput = textinput)
 
 
 @login.user_loader

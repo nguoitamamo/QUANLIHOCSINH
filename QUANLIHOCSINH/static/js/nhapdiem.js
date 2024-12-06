@@ -1,8 +1,8 @@
 let lop = document.getElementById('dslop');
 const searchInputLop = document.getElementById('lopLabel');
-const suggestionsListLop = document.getElementById('suggestionLop');
-const searchInputMon = document.getElementById('monhocLabel');
-const suggestionsListMon = document.getElementById('suggestionMonHoc');
+// const suggestionsListLop = document.getElementById('suggestionLop');
+// const searchInputMon = document.getElementById('monhocLabel');
+// const suggestionsListMon = document.getElementById('suggestionMonHoc');
 const errorContainer = document.querySelector('.alert-danger');
 const errorText = document.getElementById('error');
 
@@ -165,7 +165,6 @@ searchInputLop.addEventListener('input', () => {
     for (let i = 0; i < lop.options.length; i++) {
         if (lop.options[i].text === searchInputLop.value) {
             lop.selectedIndex = i;
-
             break;
         }
     }

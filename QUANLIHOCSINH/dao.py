@@ -215,9 +215,6 @@ def Cnt_Sum_HocSinh_Not_Lop():
     return so_luong_hoc_sinh_chua_co_lop
 
 
-
-
-
 def Cnt_Sum_Lop(khoi):
     return db.session.query(func.count(models.Lop.MaKhoi)).filter(models.Khoi.MaKhoi.__eq__(khoi)).scalar()
 
@@ -294,7 +291,20 @@ def UpdateSiSo(MaLop, SiSo):
 #         db.session.commit()
 
 
-def Division_Class(solopcanchia):
+def CreateLop(tenlop, listhocsinh):
+    currentyear = CurrentYear()
+
+    malop = 'L' + tenlop + '_' + currentyear
+    lop = models.Lop(MaLop=malop, TenLop=tenlop, SiSo=len(listhocsinh), MaKhoi=1)
+    db.session.add(lop)
+    for hocsinhid in listhocsinh:
+        lophocsinh = models.LopHocSinh(MaLop=malop, MaHocSinh=hocsinhid, NamTaoLop=currentyear)
+        db.session.add(lophocsinh)
+
+    db.session.commit()
+
+
+def Division_Class(solopcanchia, solopthem=None):
     bd = Cnt_Sum_HocSinh_Not_Lop()
 
     tb = ceil(bd / solopcanchia)
@@ -351,12 +361,15 @@ def GetUserNameByID(username):
     return models.Account.query.filter(models.Account.TenDangNhap.__eq__(username)).first().id
 
 
-def GetLopByMa(malop):
-    return db.session.query(models.Lop.TenLop, models.Lop.SiSo, models.Lop.MaLop).filter(
-        models.Lop.MaLop == malop).first()
+def GetLopByMa(malop=None, mahocsinh=None, namtaolop=None):
+    if mahocsinh:
+        return db.session.query(models.LopHocSinh.MaLop).filter(models.LopHocSinh.MaHocSinh == mahocsinh,
+                                                                models.LopHocSinh.NamTaoLop == namtaolop).first()
+    if malop:
+        return db.session.query(models.Lop.TenLop, models.Lop.SiSo, models.Lop.MaLop).filter(
+            models.Lop.MaLop == malop).first()
 
-
-
+    return None
 
 
 def GetMonHoc(mamonhoc=None, tenmonhoc=None):
@@ -378,40 +391,46 @@ def GetIDByPhone(number, malop):
 
 
 def GetIDByHoTenEmail(inputsearch, malop):
-
     return (db.session.query(
         models.UserInfor.UserID,
         models.UserInfor.Ho,
         models.UserInfor.Ten
     ).join(models.LopHocSinh, models.LopHocSinh.MaHocSinh == models.UserInfor.UserID)
-     .filter(
-         models.LopHocSinh.MaLop == malop,
-         or_(
-             func.concat(models.UserInfor.Ho, models.UserInfor.Ten).ilike(f"%{inputsearch}%"),
-             models.UserInfor.Email == inputsearch
-         )
+            .filter(
+        models.LopHocSinh.MaLop == malop,
+        or_(
+            func.concat(models.UserInfor.Ho, models.UserInfor.Ten).ilike(f"%{inputsearch}%"),
+            models.UserInfor.Email == inputsearch
+        )
     ).all())
 
 
-
-
-def GetHocSinhByTenHoTenEmailPhone(inputsearch, malop):
+def GetHocSinhByTenHoTenEmailPhone(inputsearch, malop=None, namtaolop=None):
+    res = []
 
     inputsearch = inputsearch.replace(" ", "")
 
-    res = []
-
     phone = GetIDByPhone(inputsearch, malop)
     if phone:
-
-        res.append( {"MaHocSinh": phone.UserID,
+        res.append({"MaHocSinh": phone.UserID,
                     "HoTen": GetUserInforByUserID(phone.UserID)})
 
         return res
 
-    for user in GetIDByHoTenEmail(inputsearch, malop):
-        res.append( {"MaHocSinh": user.UserID,
-                     "HoTen": user.Ho + ' ' + user.Ten})
+    if malop:
+
+        for user in GetIDByHoTenEmail(inputsearch, malop):
+            res.append({"MaHocSinh": user.UserID,
+                        "HoTen": user.Ho + ' ' + user.Ten})
+
+    else:
+        dsmalop = GetMaLop(namtaolop)
+
+        # ds = GetIDByHoTenEmail("test103@gmail.com", "L10A1_2024")
+        for i in dsmalop:
+            for user in GetIDByHoTenEmail(inputsearch=inputsearch, malop=i[0]):
+                res.append({"MaHocSinh": user.UserID,
+                            "MaLop": GetLopByMa(mahocsinh=user.UserID, namtaolop=CurrentYear())})
 
     return res
 
@@ -504,17 +523,30 @@ def LoadLop(malop, key, mamonhoc=None, mahocki=None):
         }
 
 
-def LoadHSinfo(mahocsinh, key, mamonhoc=None, mahocki=None):
+def LoadHSinfo(mahocsinh, key, keytimkiem=None, mamonhoc=None, mahocki=None):
     if key == "info":
-        inforhocsinh = (db.session.query(models.UserInfor.UserID, models.UserInfor.Ho, models.UserInfor.Ten,
-                                         models.HocSinh.DiemTbDauVao, models.UserInfor.GioiTinh,
-                                         models.UserInfor.NgaySinh, models.UserInfor.DiaChi)
-                        .join(models.Account, models.Account.id == models.UserInfor.UserID)
-                        .join(models.HocSinh, models.HocSinh.MaHocSinh == models.Account.id)
-                        .filter(models.UserInfor.UserID == mahocsinh)
-                        .all())
-        return inforhocsinh
+        if keytimkiem:
+            inforhocsinh = (db.session.query(models.LopHocSinh.MaLop, models.UserInfor.UserID, models.UserInfor.Ho,
+                                             models.UserInfor.Ten,
+                                             models.HocSinh.DiemTbDauVao, models.UserInfor.GioiTinh,
+                                             models.UserInfor.NgaySinh, models.UserInfor.DiaChi)
+                            .join(models.Account, models.Account.id == models.UserInfor.UserID)
+                            .join(models.HocSinh, models.HocSinh.MaHocSinh == models.Account.id)
+                            .join(models.LopHocSinh, models.LopHocSinh.MaHocSinh == models.HocSinh.MaHocSinh)
+                            .filter(models.UserInfor.UserID == mahocsinh, models.LopHocSinh.MaHocSinh == mahocsinh,
+                                    models.LopHocSinh.NamTaoLop == CurrentYear())
+                            .all())
 
+
+        else:
+            inforhocsinh = (db.session.query(models.UserInfor.UserID, models.UserInfor.Ho, models.UserInfor.Ten,
+                                             models.HocSinh.DiemTbDauVao, models.UserInfor.GioiTinh,
+                                             models.UserInfor.NgaySinh, models.UserInfor.DiaChi)
+                            .join(models.Account, models.Account.id == models.UserInfor.UserID)
+                            .join(models.HocSinh, models.HocSinh.MaHocSinh == models.Account.id)
+                            .filter(models.UserInfor.UserID == mahocsinh)
+                            .all())
+        return inforhocsinh
     if key == "diem":
 
         diem15phut = []
@@ -567,6 +599,8 @@ def removeHocSinh(malop, mahocsinh):
     ).first()
 
     if hocsinh:
+        lop = models.Lop.query.filter(models.Lop.MaLop == malop).first()
+        lop.SiSo = lop.SiSo - 1
         db.session.delete(hocsinh)
         db.session.commit()
         return True
@@ -578,21 +612,23 @@ def CheckHocSinhExitsLop(mahocsinh, malop):
                                           models.LopHocSinh.MaLop == malop).first()
 
 
-def addHocSinhToLop(mahocsinh, malop):
+def addHocSinhToLop(listmahocsinh, malop):
+    lop = models.Lop.query.filter(models.Lop.MaLop == malop).first()
 
-    lop = GetLopByMa(malop)
     print(lop)
-    print(type(lop.SiSo))
-    if lop.SiSo < 40:
+    print(lop.SiSo)
+
+    if (40 - lop.SiSo) < len(listmahocsinh):
+        return False
+
+    for mahocsinh in listmahocsinh:
         lop.SiSo = lop.SiSo + 1
         lophocsinh = models.LopHocSinh(MaHocSinh=mahocsinh, MaLop=malop, NamTaoLop=CurrentYear())
         db.session.add(lophocsinh)
 
         db.session.commit()
-        return True
+    return True
 
-
-    return False
 
 def AddDiemHocSinhList(maHocSinh, mamonhoc, mahocki, typeDiem, diemListNew):
     diemListOLd = GetDiemExit(mahocsinh=maHocSinh, mamonhoc=mamonhoc, mahocki=mahocki, typeDiem=typeDiem)
@@ -638,15 +674,34 @@ def AddDiemHocSinh(mahocsinh, mamonhoc, mahocki, typediem, sodiem):
     return True
 
 
-def SoLop(maxsslop):
-    return ceil(
-        db.session.query(models.LopHocSinh).filter(models.LopHocSinh.NamTaoLop == CurrentYear()).count() / maxsslop)
+def RemoveDshocsinhAllOfCurrentyear():
+    currentyear = CurrentYear()
 
+    lophocsinhcurrent = db.session.query(models.LopHocSinh).filter(models.LopHocSinh.NamTaoLop == currentyear).delete()
+
+    lopcurrent = db.session.query(models.Lop).filter(models.Lop.MaLop.ilike(f"%{currentyear}%")).delete()
+
+    db.session.commit()
+    return True
+
+
+# def SoLop(maxsslop):
+#     return ceil(
+#         db.session.query(models.LopHocSinh).filter(models.LopHocSinh.NamTaoLop == CurrentYear()).count() / maxsslop)
+
+
+def GetMaLop(namtaolop):
+    dslop = db.session.query(
+        models.LopHocSinh.MaLop
+    ).filter(
+        models.LopHocSinh.NamTaoLop == namtaolop
+    ).distinct().all()
+
+    return dslop
 
 
 def CntSiSoLopCurrent(solop, key):
-
-    cntalllopcurrentyear = sum(GetLopByMa(malop = key + str(i) + '_' +CurrentYear()).SiSo for i in range(1, solop+ 1))
+    cntalllopcurrentyear = sum(GetLopByMa(malop=key + str(i) + '_' + CurrentYear()).SiSo for i in range(1, solop + 1))
     return cntalllopcurrentyear
 
 
@@ -668,7 +723,7 @@ Ten = ["Trung", "Trinh", "A", "D", "E", "G", "B"]
 
 
 def them():
-    for i in range(1734, 2164):
+    for i in range(3000, 3031):
         idac = "HS" + str(Get_Cnt_Accout_Current()) + "_" + str(random.randint(10, 99))
         hocsinh = models.HocSinh(MaHocSinh=idac, DiemTbDauVao=float(random.randint(1, 10)))
         db.session.add(hocsinh)
@@ -777,5 +832,24 @@ if __name__ == '__main__':
         # print(f"kq: {int(tb)} , type : {type(tb)}")
         # solop = ceil((Cnt_Sum_HocSinh_Not_Lop() / app.config["MAX_SS_LOP"]))
         # print(solop)
+        # print(CurrentYear())
+        # malop = GetLopByMa(mahocsinh = 'HS102_75', namtaolop = CurrentYear())
+        # print(malop[0][1:].split('_')[0])
+        # print(GetHocSinhByTenHoTenEmailPhone(inputsearch="test103@gmail.com",namtaolop="2024"))
+        # print(GetIDByHoTenEmail(inputsearch="test103@gmail.com", malop = "L10A1_2024"))
 
-        print((GetLopByMa( malop = 'L10A1_2024').SiSo))
+        # res = []
+        # dsmalop = GetMaLop("2024")
+        # print(dsmalop)
+        # print()
+        #
+        # ds = GetIDByHoTenEmail("test103@gmail.com", "L10A1_2024")
+        #
+        # for malop in dsmalop:
+        #     for user in ds:
+        #         res.append({"MaHocSinh": user.UserID,
+        #                     "HoTen": user.Ho + ' ' + user.Ten})
+        #         print(len(res))
+        #
+        # print(res)
+        print(LoadHSinfo(mahocsinh='HS377_98', key="info"))

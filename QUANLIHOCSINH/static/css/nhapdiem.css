@@ -25,6 +25,11 @@
     margin-right: 10px;
 }
 
+
+.custom-table input[type="text"] {
+    text-align: center;
+}
+
 input[type="text"],
 .form-row select {
     flex: 2;
@@ -53,6 +58,11 @@ input[type="text"],
 .custom-table td {
     border: 1px solid #999;
     padding: 8px;
+}
+
+table tbody tr td {
+    text-align: center;
+
 }
 
 

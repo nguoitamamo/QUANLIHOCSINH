@@ -147,7 +147,7 @@
 
         <div>
             <table class="table table-striped custom-table" id="scoreTable"
-                   style="width: 100%; border-collapse: collapse; margin-bottom: 0">
+                   style="border-collapse: collapse; margin-bottom: 0">
                 <thead>
                 <tr>
                     <th rowspan="2" class="stt">STT</th>
@@ -189,7 +189,7 @@
 
             <div style="height: 450px; overflow-y: auto; margin-bottom: 50px">
                 <table id="scoreTable" class="table table-striped custom-table"
-                       style="width: 100%; border-collapse: collapse; margin-bottom: 0;">
+                       style=" border-collapse: collapse; margin-bottom: 0;">
                     <tbody>
                     {% for hs in dshocsinh %}
                         <tr id={{ hs['MaHocSinh'] }}>
@@ -226,20 +226,20 @@
 
 
         <script src={{ url_for('static', filename = 'js/nhapdiem.js') }}></script>
-        <script>
-            function UpdateSelect() {
-                for (let i = 0; i < lop.options.length; i++) {
-                    if (lop.options[i].text === searchInputLop.value) {
-                        lop.selectedIndex = i;
-
-                        break;
-                    }
-                }
-                LoadMonOfLop();
-            }
-
-
-        </script>
+{#        <script>#}
+            {#function UpdateSelect() {#}
+            {#    for (let i = 0; i < lop.options.length; i++) {#}
+            {#        if (lop.options[i].text === searchInputLop.value) {#}
+            {#            lop.selectedIndex = i;#}
+            {##}
+            {#            break;#}
+            {#        }#}
+            {#    }#}
+            {#    LoadMonOfLop();#}
+{#            }#}
+{##}
+{##}
+{#        </script>#}
     </div>
 
 {% endblock %}
