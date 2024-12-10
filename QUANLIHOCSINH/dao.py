@@ -170,8 +170,11 @@ def LoadEmailConfirm(value):
     return models.Token.query.filter(models.Token.Value.__eq__(value)).first().Email
 
 
-def LoadKhoiAll():
-    return db.session.query(models.Khoi.TenKhoi, models.Khoi.MaKhoi).all()
+def LoadKhoi(makhoi = None):
+    if makhoi:
+        return db.session.query(models.Khoi.TenKhoi).filter(models.Khoi.MaKhoi == makhoi).first().TenKhoi
+    else:
+        return db.session.query(models.Khoi.TenKhoi, models.Khoi.MaKhoi).all()
 
 
 def add_HocSinh(diemTbDauVao, firstname, lastname, ngaysinh, gioitinh, diachi, email, sdt=None, avatar=None):
@@ -385,8 +388,8 @@ def GetMonHoc(mamonhoc=None, tenmonhoc=None):
     )
 
 
-def GetIDByPhone(number, malop):
-    return (db.session.query(models.Phone.UserID).join(models.LopHocSinh, models.LopHocSinh.MaLop == malop)
+def GetIDByPhone(number):
+    return (db.session.query(models.Phone.UserID)
             .filter(models.Phone.Number == number).first())
 
 
@@ -405,12 +408,12 @@ def GetIDByHoTenEmail(inputsearch, malop):
     ).all())
 
 
-def GetHocSinhByTenHoTenEmailPhone(inputsearch, malop=None, namtaolop=None):
+def  GetHocSinhByTenHoTenEmailPhone(inputsearch, malop=None, namtaolop=None):
     res = []
 
     inputsearch = inputsearch.replace(" ", "")
 
-    phone = GetIDByPhone(inputsearch, malop)
+    phone = GetIDByPhone(inputsearch)
     if phone:
         res.append({"MaHocSinh": phone.UserID,
                     "HoTen": GetUserInforByUserID(phone.UserID)})
@@ -523,30 +526,33 @@ def LoadLop(malop, key, mamonhoc=None, mahocki=None):
         }
 
 
-def LoadHSinfo(mahocsinh, key, keytimkiem=None, mamonhoc=None, mahocki=None):
+def TimKiemHocSinh(mahocsinh, namtaolop, key = None):
     if key == "info":
-        if keytimkiem:
-            inforhocsinh = (db.session.query(models.LopHocSinh.MaLop, models.UserInfor.UserID, models.UserInfor.Ho,
-                                             models.UserInfor.Ten,
-                                             models.HocSinh.DiemTbDauVao, models.UserInfor.GioiTinh,
-                                             models.UserInfor.NgaySinh, models.UserInfor.DiaChi)
-                            .join(models.Account, models.Account.id == models.UserInfor.UserID)
-                            .join(models.HocSinh, models.HocSinh.MaHocSinh == models.Account.id)
-                            .join(models.LopHocSinh, models.LopHocSinh.MaHocSinh == models.HocSinh.MaHocSinh)
-                            .filter(models.UserInfor.UserID == mahocsinh, models.LopHocSinh.MaHocSinh == mahocsinh,
-                                    models.LopHocSinh.NamTaoLop == CurrentYear())
-                            .all())
+        return (db.session.query(models.LopHocSinh.MaLop, models.UserInfor.UserID, models.UserInfor.Ho,
+                                         models.UserInfor.Ten,
+                                         models.HocSinh.DiemTbDauVao, models.UserInfor.GioiTinh,
+                                         models.UserInfor.NgaySinh, models.UserInfor.DiaChi)
+                        .join(models.Account, models.Account.id == models.UserInfor.UserID)
+                        .join(models.HocSinh, models.HocSinh.MaHocSinh == models.Account.id)
+                        .join(models.LopHocSinh, models.LopHocSinh.MaHocSinh == models.HocSinh.MaHocSinh)
+                        .filter(models.UserInfor.UserID == mahocsinh, models.LopHocSinh.MaHocSinh == mahocsinh,
+                                models.LopHocSinh.NamTaoLop == namtaolop)
+                        .all())
+    
 
 
-        else:
-            inforhocsinh = (db.session.query(models.UserInfor.UserID, models.UserInfor.Ho, models.UserInfor.Ten,
-                                             models.HocSinh.DiemTbDauVao, models.UserInfor.GioiTinh,
-                                             models.UserInfor.NgaySinh, models.UserInfor.DiaChi)
-                            .join(models.Account, models.Account.id == models.UserInfor.UserID)
-                            .join(models.HocSinh, models.HocSinh.MaHocSinh == models.Account.id)
-                            .filter(models.UserInfor.UserID == mahocsinh)
-                            .all())
-        return inforhocsinh
+
+def LoadHSinfo(mahocsinh, key, mamonhoc=None, mahocki=None):
+    if key == "info":
+
+        return (db.session.query(models.UserInfor.UserID, models.UserInfor.Ho, models.UserInfor.Ten,
+                                            models.HocSinh.DiemTbDauVao, models.UserInfor.GioiTinh,
+                                            models.UserInfor.NgaySinh, models.UserInfor.DiaChi)
+                        .join(models.Account, models.Account.id == models.UserInfor.UserID)
+                        .join(models.HocSinh, models.HocSinh.MaHocSinh == models.Account.id)
+                        .filter(models.UserInfor.UserID == mahocsinh)
+                        .all())
+
     if key == "diem":
 
         diem15phut = []
@@ -612,7 +618,7 @@ def CheckHocSinhExitsLop(mahocsinh, malop):
                                           models.LopHocSinh.MaLop == malop).first()
 
 
-def addHocSinhToLop(listmahocsinh, malop):
+def addHocSinhToLop(listmahocsinh, malop, namtaolop):
     lop = models.Lop.query.filter(models.Lop.MaLop == malop).first()
 
     print(lop)
@@ -623,7 +629,7 @@ def addHocSinhToLop(listmahocsinh, malop):
 
     for mahocsinh in listmahocsinh:
         lop.SiSo = lop.SiSo + 1
-        lophocsinh = models.LopHocSinh(MaHocSinh=mahocsinh, MaLop=malop, NamTaoLop=CurrentYear())
+        lophocsinh = models.LopHocSinh(MaHocSinh=mahocsinh, MaLop=malop, NamTaoLop=namtaolop)
         db.session.add(lophocsinh)
 
         db.session.commit()
@@ -690,6 +696,8 @@ def RemoveDshocsinhAllOfCurrentyear():
 #         db.session.query(models.LopHocSinh).filter(models.LopHocSinh.NamTaoLop == CurrentYear()).count() / maxsslop)
 
 
+
+
 def GetMaLop(namtaolop):
     dslop = db.session.query(
         models.LopHocSinh.MaLop
@@ -749,107 +757,20 @@ def them():
 #
 #     db.session.commit()
 
+
+
+
 if __name__ == '__main__':
     with app.app_context():
         # lop_hocsinh = LoadLop(malop = 'L10A1_2023',key = "diem",  mamonhoc='MH1', mahocki=1)
         #
-        # # for i in lophocsinh:
-        # #     print(i)
-        # #
+        #
+        # print(lop_hocsinh)
+        #
         # for i in lop_hocsinh['diemdshocsinh']:
-        #     print(f"mahocsinh: {i['MaHocSinh']} , hoten : {i['HoTen']} , 15phut : {i['15phut']} , 1tiet : {i['1tiet']} , cuoiki : {i['diemthi']}")
-        #
-        # # #
-        # # for i in lophocsinh:
-        # #     print(i)
-        #
-        # # diem = GetDiemExit(mahocsinh='HS437_59', mamonhoc='MH1', mahocki=1, typeDiem='cuối kì')
-        # #
-        # # print(type(diem))
-        # #
-        # # for i in diem:
-        #     print(i)
-        #
-        # if lop_hocsinh and 'diemdshocsinh' in lop_hocsinh:
-        #     for hs in lop_hocsinh['diemdshocsinh']:
-        #         print(f"Họ tên: {hs['HoTen']}")
-        #
-        #         for i in hs.get('15phut', []):
-        #             print(f"Điểm 15 phút: {i}")
-        #
-        #         for i in hs.get('1tiet', []):
-        #             print(f"Điểm 1 tiết: {i}")
-        #
-        #         for i in hs.get('diemthi', []):
-        #             print(f"Điểm cuối kỳ: {i}")
-        #
-        #     print(f"Max 15 phút: {lop_hocsinh['max15phut']}")
-        #     print(f"Max 1 tiết: {lop_hocsinh['max1tiet']}")
-        # else:
-        #     print("Không có dữ liệu học sinh.")
+        #     if sum(i['15phut']) != 0:
+        #         print(f"trung binh: { sum(i['15phut']) / len(i['15phut']) }")
+        print(TimKiemHocSinh(mahocsinh = 'HS437_59',  namtaolop ="2023", key = "info" ))
 
-        # In ra thông tin
-        # print(f"Họ tên: {ho_ten['Ho']} {ho_ten['Ten']}")
-        # print("Điểm 15 phút:", diem_15phut)
-        # print("Điểm 1 tiết:", diem_1tiet)
-        # print("Điểm cuối kỳ:", diem_cuoiki)
-        # print("-" * 20)
 
-        # for hs in danh_sach_hoc_sinh:
-        #     for info in hs:
-        #         print(
-        #             f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
 
-        #     print(f"Họ: {info.HoTen},  MaHocSinh: {info.MaHocSinh} , Điểm: {info.SoDiem}, Loại điểm : {info.TypeDiem} ")
-        # dshocsinh = HocSinhNotLop()
-        #
-        # for i in dshocsinh:
-        #     for info in i:
-        #         print(
-        #             f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Điểm: {info.DiemTbDauVao} Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
-
-        # print(Solop1(40))
-        # print(LoadMonHocOfLop('10A1'))
-        # print(GetLopByID('L' + '10A1').MaLop)
-
-        # for i in LoadHSinfo('HS0_92', key = "diem" ):
-        #     print(i)
-
-        # print(LoadHSinfo('HS0_92' , key = "info"))
-
-        # print(GetMonHoc(mamonhoc = 'MH1').TenMonHoc)
-        # for ten_lop, danh_sach_hoc_sinh in lop_hocsinh.items():
-        #
-        #     print(f"Lớp: {ten_lop}")
-        #
-        #     for hs in danh_sach_hoc_sinh:
-        #         for info in hs:
-        #             print(
-        #                          f" Mã học sinh: {info.UserID} ,Họ: {info.Ho}, Tên: {info.Ten}, Giới tính: {info.GioiTinh}, Ngày sinh: {info.NgaySinh}, Địa chỉ: {info.DiaChi}")
-        #
-        # #
-        # tb = ceil(427 / 11)
-        # print(f"kq: {int(tb)} , type : {type(tb)}")
-        # solop = ceil((Cnt_Sum_HocSinh_Not_Lop() / app.config["MAX_SS_LOP"]))
-        # print(solop)
-        # print(CurrentYear())
-        # malop = GetLopByMa(mahocsinh = 'HS102_75', namtaolop = CurrentYear())
-        # print(malop[0][1:].split('_')[0])
-        # print(GetHocSinhByTenHoTenEmailPhone(inputsearch="test103@gmail.com",namtaolop="2024"))
-        # print(GetIDByHoTenEmail(inputsearch="test103@gmail.com", malop = "L10A1_2024"))
-
-        # res = []
-        # dsmalop = GetMaLop("2024")
-        # print(dsmalop)
-        # print()
-        #
-        # ds = GetIDByHoTenEmail("test103@gmail.com", "L10A1_2024")
-        #
-        # for malop in dsmalop:
-        #     for user in ds:
-        #         res.append({"MaHocSinh": user.UserID,
-        #                     "HoTen": user.Ho + ' ' + user.Ten})
-        #         print(len(res))
-        #
-        # print(res)
-        print(LoadHSinfo(mahocsinh='HS377_98', key="info"))

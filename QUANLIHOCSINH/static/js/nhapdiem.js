@@ -1,8 +1,5 @@
 let lop = document.getElementById('dslop');
 const searchInputLop = document.getElementById('lopLabel');
-// const suggestionsListLop = document.getElementById('suggestionLop');
-// const searchInputMon = document.getElementById('monhocLabel');
-// const suggestionsListMon = document.getElementById('suggestionMonHoc');
 const errorContainer = document.querySelector('.alert-danger');
 const errorText = document.getElementById('error');
 
@@ -206,7 +203,6 @@ function saveTableData(state) {
 
     malop = selectedOption.value;
 
-    console.log(malop)
     fetch(`/user/nhapdiem/diemdshocsinh/${malop}/${monhoc}/${hocki}/${namhoc}/${state}`, {
         method: 'POST',
         headers: {
@@ -235,10 +231,6 @@ function LoadMonOfLop() {
     const lop = document.getElementById('dslop');
     malop = lop.value;
 
-    console.log(malop)
-    // // console.log(lop.value)
-    //
-    // malop = 'L10A1_2023'
     fetch(`/user/nhapdiem/loadmon/${malop}`, {
         method: 'post',
         headers: {

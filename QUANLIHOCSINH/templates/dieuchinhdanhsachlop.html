@@ -14,13 +14,6 @@
             margin: 20px auto;
         }
 
-        .btn_timkiem {
-            width: 350px;
-            height: 50px;
-            border: 1px solid;
-            border-radius: 10px;
-        }
-
         .btn-sua {
             background-color: #ade6ad;
             height: 50px;
@@ -31,6 +24,14 @@
         select + i {
             margin: 20px;
         }
+
+        .btn_timkiem {
+            width: 350px;
+            height: 50px;
+            border: 1px solid;
+            border-radius: 10px;
+        }
+
 
         .stt,
         .hoten,
@@ -109,9 +110,10 @@
                     </div>
                 </div>
 
-                {#            #}
                 <div style="text-align: right;">
-
+                    <button class="btn btn-sua" data-bs-toggle="modal"
+                            data-bs-target="#modal-sapxeploptudau">Sắp xếp lớp từ đầu
+                    </button>
                     <button class="btn btn-sua" data-bs-toggle="modal"
                             data-bs-target="#modal-createlop">Tạo lớp
                     </button>
@@ -129,9 +131,17 @@
                          alt="logo THPT NguyenDieu">
                     <h3>Bạn có chắc chắn muốn sắp xếp từ đầu?</h3>
                 </div>
-                <div class="modal-body" style="text-align: center; height: 80px">
+                <div class="modal-body" style="text-align: center;">
+
+                    <p>
+                        <strong>Chú ý:</strong>
+                        Chỉ sắp xếp lại tất cả các lớp của học sinh mới!
+                    </p>
                     <button class="btn btn-sua" onclick="DevisionClassBegin0()">Có</button>
                     <button class="btn btn-sua" data-bs-dismiss="modal">Không</button>
+                </div>
+                <div class="modal-footer">
+
                 </div>
             </div>
         </div>
@@ -139,50 +149,45 @@
 
 
 
-    {#    <form action="" method="POST" class="form-container">#}
-    {#        <div class="form-row">#}
-    {#            <label for="lopLabel">Khối: </label>#}
-    {#            <select name="dslop" onchange="updateLabel(this, 'lopLabel')">#}
-    {#                <option value="">Khối</option>#}
-    {#                {% for i in dskhoi %}#}
-    {#                    <option value="{{ i.TenLop }}">{{ i.TenLop }}</option>#}
-    {#                {% endfor %}#}
-    {#            </select>#}
-    {##}
-    {##}
-    {#        </div>#}
-    {#        <div style="margin: 20px auto;">#}
-    {#            <button type="submit" class="btn-save-infor-hocsinh">Tìm kiếm</button>#}
-    {#        </div>#}
-    {#    </form>#}
+    <div class="container mt-3" style="display: flex; justify-content: space-between">
+        <form action="{{ url_for('timkkiemhocsinhalllop') }}" method="post">
+            <ul class="pagination" id="page-item-solop">
 
-    {% if solop %}
-        <div class="container mt-3" style="display: flex; justify-content: space-between">
-            <ul class="pagination">
-
+                <li class="page-item" style="margin-left: 5px;"><a class="page-link" href="#">Khối</a></li>
+                <select name="dskhoi" id="dskhoi">
+                    <option value="0">Mới</option>
+                    {% for i in dskhoi %}
+                        {% if i.MaKhoi == makhoi %}
+                            <option selected value="{{ i.MaKhoi }}">{{ i.TenKhoi }}</option>
+                        {% else %}
+                            <option value="{{ i.MaKhoi }}">{{ i.TenKhoi }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
                 <li class="page-item" style="margin-left: 5px;"><a class="page-link" href="#">Lớp</a></li>
+
                 {% for i in range(1, solop + 1) %}
-                    <li class="page-item"><a class="page-link"
-                                             href="{{ url_for('dieuchinhdanhsachlop',page=i) }}">{{ i }}</a></li>
+                    <li class="page-item"><a class="page-link" id="page-link-{{ i }}"
+                                             href="
+                                                {{ url_for('dieuchinhdanhsachlop',
+                                                page=i,
+                                                makhoi = makhoi,
+                                                tenkhoi = tenkhoi) }}">{{ i }}</a>
+                    </li>
                 {% endfor %}
 
-
             </ul>
-            <div>
-                <button class="btn btn-sua" data-bs-toggle="modal"
-                        data-bs-target="#modal-sapxeploptudau">Sắp xếp lớp từ đầu
-                </button>
-            </div>
-            <form action="{{ url_for('timkkiemhocsinhalllop') }}" method="post">
-                <input type="text" class="btn_timkiem" name="textinput"
-                       value="{{ textinput }}" id="inputsearch"
-                       placeholder="Huỳnh A, huynhngoctruong@gmail.com, sdt, ...">
-                <button class="btn btn-sua" type="submit">
-                    Tìm kiếm
-                </button>
-            </form>
-        </div>
-    {% endif %}
+
+
+            <input type="text" class="btn_timkiem" name="textinput"
+                   value="{{ textinput }}"
+                   placeholder="Huỳnh A, huynhngoctruong@gmail.com, sdt, ...">
+            <button class="btn btn-sua" type="submit">
+                Tìm kiếm
+            </button>
+        </form>
+    </div>
+
 
 
     <div class="container mt-3">
@@ -243,31 +248,8 @@
                                             <i class="fa-solid fa-minus"></i>
                                         </button>
                                     {% endif %}
-
-
                                 </td>
-
-
-
                             {% endfor %}
-                            {#                            <td class="hoten">{{ hocsinh[2] }} {{ hocsinh[3] }}</td>#}
-                            {##}
-                            {#                            <td class="diem">{{ hocsinh[4] }}</td>#}
-                            {#                            <td class="gioitinh">{{ hocsinh[5] }}</td>#}
-                            {#                            <td class="namsinh">{{ hocsinh[6] }}</td>#}
-                            {#                            {% if key %}#}
-                            {#                                <td class="diachi">{{ hocsinh[0] }}</td>#}
-                            {#                            {% else %}#}
-                            {#                                <td class="diachi">{{ hocsinh[7] }}</td>#}
-                            {#                            {% endif %}#}
-                            {##}
-                            {#                            <td class="xoa">#}
-                            {#                                <button style="background: none; border: none"#}
-                            {#                                        onclick="RemoveHS('{{ info.UserID }}', '{{ lop }}')">#}
-                            {#                                >#}
-                            {#                                    <i class="fa-solid fa-minus"></i>#}
-                            {#                                </button>#}
-                            {#                            </td>#}
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -291,7 +273,7 @@
                         <div class="form-row">
                             <label for="tenlop">Tên Lớp:</label>
                             <input type="text" id="tenlop"
-                                   value="10A{{ solop + 1 }}">
+                                   value="{{ tenkhoi }}A{{ solop + 1 }}">
 
                             <label for="textcondition">Lọc:</label>
                             <select name="" id="selectcondition">
@@ -311,7 +293,7 @@
                         {% if dshocsinhnotlop %}
                             <div class="container">
 
-                                <div class="container-dshoc-notlop" style="border: none; width: 100%">
+                                <div class="container-dshoc-notlop createlop" style="border: none; width: 100%">
                                     <h3 style="margin-top: 20px; text-align: center">DANH SÁCH HỌC SINH CHƯA CÓ
                                         LỚP</h3>
                                     <div>
@@ -357,7 +339,6 @@
                                         </div>
                                     </div>
 
-                                    {#            #}
                                     <div style="display: flex; justify-content: space-between">
                                         <p style="flex: 1">
                                             <strong>*Mặc định:</strong>
@@ -376,11 +357,63 @@
 
                     </div>
 
-                    {#                    </form>#}
                 </div>
                 <div class="modal-footer"></div>
             </div>
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/saveinfordshocsinh.js') }}"></script>
+    <script>
+        const dskhoi = document.getElementById('dskhoi');
+
+        dskhoi.addEventListener('change', () => {
+
+
+            const khoi = dskhoi.options[dskhoi.selectedIndex];
+            const pageitem = document.getElementById('page-item-solop');
+
+
+            fetch(`/user/dieuchinhdanhsachlop/loadsolop/${khoi.value}`, {
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.solop) {
+
+                        const solop = {{ solop }}
+
+                        for (let i = 1; i <= solop; i++) {
+                            const element = document.getElementById(`page-link-${i}`);
+                            if (element) {
+                                element.remove();
+                            }
+                        }
+
+                        for (let i = 1; i <= data.solop; i++) {
+                            const li = document.createElement('li');
+                            li.className = 'page-item';
+                            const a = document.createElement('a');
+                            a.className = 'page-link';
+                            a.id = `page-link-${i}`;
+
+                            a.href = `/user/dieuchinhdanhsachlop?page=${i}&makhoi=${khoi.value}&tenkhoi=${khoi.textContent}`;
+
+                            a.textContent = i;
+
+                            li.appendChild(a)
+
+                            pageitem.appendChild(li);
+
+                        }
+
+                    }
+
+                })
+
+        })
+
+    </script>
 {% endblock %}
