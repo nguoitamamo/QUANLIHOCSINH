@@ -608,6 +608,7 @@ def removeHocSinh(malop, mahocsinh):
         lop = models.Lop.query.filter(models.Lop.MaLop == malop).first()
         lop.SiSo = lop.SiSo - 1
         db.session.delete(hocsinh)
+
         db.session.commit()
         return True
     return False

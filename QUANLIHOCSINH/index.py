@@ -231,7 +231,7 @@ def column15phut(state):
 
             socot15phut = socot15phut + 1
 
-            if socot15phut > 5:
+            if socot15phut > app.config["MAX_15PHUT"]:
                 return jsonify({'success': False,
                                 'error': "Tối đa 5 cột!"})
 
@@ -266,7 +266,7 @@ def addcolumn1tiet(state):
 
             socot1tiet = socot1tiet + 1
 
-            if socot1tiet > 3:
+            if socot1tiet > app.config["MAX_1TIET"]:
                 return jsonify({'success': False,
                                 'error': "Tối đa 3 cột!"})
 
@@ -278,7 +278,7 @@ def addcolumn1tiet(state):
 
             socot1tiet = socot1tiet - 1
 
-            if socot1tiet < 1:
+            if socot1tiet < 1 :
                 return jsonify({'success': False,
                                 'error': "Tối thiểu 1 cột!"})
 

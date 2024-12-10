@@ -25,6 +25,9 @@ app.config["15PHUT"] = 0.2
 app.config["1TIET"] = 0.3
 app.config["CUOIKY"] = 0.5
 
+app.config["MAX_15PHUT"] = 5
+app.config["MAX_1TIET"] = 3
+
 
 
 
