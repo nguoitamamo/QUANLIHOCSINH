@@ -1,6 +1,7 @@
 from itertools import count
 from math import ceil
 
+from flask_sqlalchemy.model import Model
 from sqlalchemy import func
 from QUANLIHOCSINH import app, db
 import models
@@ -10,7 +11,7 @@ import cloudinary
 from cloudinary import uploader
 from datetime import datetime
 from enum import Enum
-from sqlalchemy import or_
+from sqlalchemy import or_,and_
 import random
 
 
@@ -28,7 +29,8 @@ def Load_Permission():
 
 def Load_MonHoc():
     return models.MonHoc.query.all()
-
+def load_hoc_ki():
+    return models.HocKi.query.all()
 
 def Check_login(username, password):
     if username and password:
@@ -237,6 +239,79 @@ def HocSinhNotLop(tb=None):
 def Get_Sum_HS_Lop(malop):
     return db.session.query(func.count(models.LopHocSinh.MaHocSinh)).filter(
         models.LopHocSinh.MaLop.__eq__(malop)).scalar()
+
+# def count_loai_diem(type_diem,ma_hoc_sinh, ma_mon_hoc, ma_hoc_ki):
+#     count = db.session.query(func.count(models.Diem.DiemID)).filter(
+#         models.Diem.TypeDiem == type_diem,
+#         models.Diem.MaHocSinh == ma_hoc_sinh,
+#         models.Diem.MaMonHoc == ma_mon_hoc,
+#         models.Diem.MaHocKi == ma_hoc_ki
+#     ).a
+#     return count
+def tinh_diem_trung_binh(diem_15_phut, diem_1_tiet, diem_cuoi_ki):
+    # Tính tổng điểm
+    tong_diem = sum(diem_15_phut) * 1 + sum(diem_1_tiet) * 2 + diem_cuoi_ki * 3
+    tong_trong_so = len(diem_15_phut) * 1 + len(diem_1_tiet) * 2 + 3  # Tổng trọng số
+
+    # Tính điểm trung bình
+    diem_trung_binh = tong_diem / tong_trong_so
+    return round(diem_trung_binh, 2)
+def Tinh_Diem_Trung_Binh_Mon_Hoc_Sinh(MaHocSinh, MaMonHoc, MaHocKi):
+    # Lấy tất cả các điểm của học sinh, môn học và học kỳ chỉ trong một lần truy vấn
+    diem = db.session.query(models.Diem.TypeDiem, models.Diem.SoDiem).filter(
+        models.Diem.MaHocSinh == MaHocSinh,
+        models.Diem.MaMonHoc == MaMonHoc,
+        models.Diem.MaHocKi == MaHocKi
+    ).all()
+
+    # Phân loại điểm dựa trên TypeDiem
+    diem_15_phut = [float(d[1]) for d in diem if d[0] == "15 phút"]
+    diem_1_tiet = [float(d[1]) for d in diem if d[0] == "1 tiết"]
+    diem_cuoi_ki = next((float(d[1]) for d in diem if d[0] == "cuối kì"), 0.0)
+
+    # Tính điểm trung bình
+    return float(tinh_diem_trung_binh(diem_15_phut, diem_1_tiet, diem_cuoi_ki))
+
+
+def tinh_so_luong_dat_cua_lop(MaLop, MaMonHoc, MaHocKi):
+    # Lấy danh sách học sinh trong lớp
+    ds_hoc_sinh = db.session.query(models.LopHocSinh.MaHocSinh).filter(
+        models.LopHocSinh.MaLop == MaLop
+    ).all()
+
+    # Chuyển danh sách học sinh thành một danh sách các mã học sinh
+    ma_hoc_sinh_list = [hs[0] for hs in ds_hoc_sinh]
+
+    # Lấy tất cả điểm của các học sinh trong lớp cho môn học và học kỳ
+    diem = db.session.query(models.Diem.MaHocSinh, models.Diem.TypeDiem, models.Diem.SoDiem).filter(
+        models.Diem.MaHocSinh.in_(ma_hoc_sinh_list),
+        models.Diem.MaMonHoc == MaMonHoc,
+        models.Diem.MaHocKi == MaHocKi
+    ).all()
+
+    # Phân loại điểm theo học sinh
+    diem_theo_hoc_sinh = {}
+    for ma_hs, type_diem, so_diem in diem:
+        if ma_hs not in diem_theo_hoc_sinh:
+            diem_theo_hoc_sinh[ma_hs] = {"15 phút": [], "1 tiết": [], "cuối kì": 0.0}
+        if type_diem == "15 phút":
+            diem_theo_hoc_sinh[ma_hs]["15 phút"].append(float(so_diem))
+        elif type_diem == "1 tiết":
+            diem_theo_hoc_sinh[ma_hs]["1 tiết"].append(float(so_diem))
+        elif type_diem == "cuối kì":
+            diem_theo_hoc_sinh[ma_hs]["cuối kì"] = float(so_diem)
+
+    # Tính số lượng đạt
+    soluongdat = 0
+    for ma_hs, diem in diem_theo_hoc_sinh.items():
+        diem_15_phut = diem["15 phút"]
+        diem_1_tiet = diem["1 tiết"]
+        diem_cuoi_ki = diem["cuối kì"]
+        diem_trung_binh = tinh_diem_trung_binh(diem_15_phut, diem_1_tiet, diem_cuoi_ki)
+        if diem_trung_binh >= 5.0:
+            soluongdat += 1
+
+    return soluongdat
 
 
 def UpdateSiSo(MaLop, SiSo):
@@ -488,6 +563,17 @@ class TypeDiem(Enum):
     TIET1 = "1 tiết"
     CUOIKI = "cuối kì"
 
+def LoadLopHoc(MaMonHoc,MaHocKi):
+    return (db.session.query(models.Lop)
+            .join(models.Hoc,models.Lop.MaLop==models.Hoc.MaLop)
+            .join(models.HocKi,models.Hoc.MaHocKi==models.HocKi.MaHocKi)
+            .join(models.MonHoc,models.Hoc.MaMonHoc==models.MonHoc.MaMonHoc)
+            .filter(
+        and_(
+            models.HocKi.MaHocKi == MaHocKi,
+            models.MonHoc.MaMonHoc == MaMonHoc
+        )).all()
+            )
 
 def LoadLop(malop, key, mamonhoc=None, mahocki=None):
     dshocsinh = []

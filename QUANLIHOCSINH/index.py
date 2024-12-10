@@ -1,4 +1,5 @@
 import itertools
+import math
 from datetime import datetime
 
 from QUANLIHOCSINH import app, login
@@ -775,7 +776,41 @@ def getinfolop():
 
 @app.route("/user/baocaothongke")
 def baocaothongke():
-    return render_template("baocaothongke.html")
+    danh_sach_mon_hoc = dao.Load_MonHoc()
+    danh_sach_hoc_ki = dao.load_hoc_ki()
+
+    return render_template("baocaothongke.html",danh_sach_mon_hoc=danh_sach_mon_hoc,danh_sach_hoc_ki=danh_sach_hoc_ki)
+
+@app.route("/user/baocaothongke/submit",methods=["GET","POST"])
+def submit():
+    danh_sach_mon_hoc = dao.Load_MonHoc()
+    danh_sach_hoc_ki = dao.load_hoc_ki()
+
+    if request.method == 'POST':
+        MonHoc = request.form.get('MonHoc')
+        HocKi = request.form.get('HocKi')
+
+        danh_sach_lop_hoc = dao.LoadLopHoc(MonHoc,HocKi)
+        TenMonHoc = ""
+        TenHocKi = ""
+        TenNamHoc = ""
+        ds_lop = []
+        for MH in danh_sach_mon_hoc:
+            if MonHoc == MH.MaMonHoc:
+                TenMonHoc = MH.TenMonHoc
+        for Hk in danh_sach_hoc_ki:
+            if int(HocKi) == Hk.MaHocKi:
+                TenHocKi = Hk.TenHocKi
+                TenNamHoc = Hk.NamHoc
+
+        stt = 0
+        for lop in danh_sach_lop_hoc:
+            stt += 1
+            soluongdat = dao.tinh_so_luong_dat_cua_lop(lop.MaLop, MonHoc, HocKi)
+            tile = round((soluongdat / lop.SiSo) * 100,2) if lop.SiSo != 0 else 0
+            ds_lop.append([stt, lop.TenLop, lop.SiSo, soluongdat, tile])
+
+    return  render_template("baocaothongke.html",danh_sach_mon_hoc=danh_sach_mon_hoc,danh_sach_hoc_ki=danh_sach_hoc_ki,TenMonHoc=TenMonHoc,TenHocKi=TenHocKi,TenNamHoc=TenNamHoc,Lop=ds_lop)
 
 
 # @app.route('/user/nhapdiem/lop/search/<keyword>/<field>/<malop>', methods=['GET'])
@@ -889,7 +924,10 @@ def timkkiemhocsinhalllop():
 @login.user_loader
 def user_load(id):
     return dao.Get_User_By_ID(id=id)
-
+# @app.route("/user/baocaothongke/load_mon_hoc/")
+# def load_mon_hoc():
+#
+#     return render_template("/baocaothongke.html")
 
 if __name__ == "__main__":
     from QUANLIHOCSINH.admin import *
