@@ -57,8 +57,11 @@ function SaveInforDshocsinh() {
 
 function RemoveHS(MaHocSinh, TenLop) {
 
+    const dskhoi = document.getElementById('dskhoi');
 
-    fetch(`/user/dieuchinhdanhsachlop/removehocsinh/${TenLop}/${MaHocSinh}`, {
+    const makhoi = dskhoi.options[dskhoi.selectedIndex].value;
+
+    fetch(`/user/dieuchinhdanhsachlop/removehocsinh/${TenLop}/${MaHocSinh}/${makhoi}`, {
         method: 'post',
         headers: {
             'Content-Type': 'application/json',
@@ -103,8 +106,10 @@ function CheckAddHocSinh(hocsinhid, obj) {
 
 function AddHocSinhToLop(tenlop) {
 
+    const dskhoi = document.getElementById('dskhoi');
+    const makhoi = dskhoi.options[dskhoi.selectedIndex].value;
 
-    fetch(`/user/dieuchinhdanhsachlop/addhocsinh/ds/${tenlop}`, {
+    fetch(`/user/dieuchinhdanhsachlop/addhocsinh/ds/${tenlop}/${makhoi}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -226,7 +231,7 @@ function FindOfCondition() {
     const value = parseFloat(textcondition);
 
 
-    const rows = document.querySelectorAll('.container-dshoc-notlop tbody tr');
+    const rows = document.querySelectorAll('.createlop tbody tr');
 
     rows.forEach(row => {
         const diemCell = row.querySelector('.diem');
@@ -252,7 +257,7 @@ function FindOfCondition() {
 
         if (match) {
             row.classList.add('highlight-row');
-        }else {
+        } else {
             row.classList.remove('highlight-row');
         }
     });
@@ -260,24 +265,5 @@ function FindOfCondition() {
 
 
 
-function FindHocSinhAllLop() {
-
-    const textinput = document.getElementById('inputsearch').value.trim();
 
 
-     fetch(`/user/dieuchinhdanhsachlop/timkiem/dshocsinh/${textinput}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.reload();
-            }
-        })
-
-
-}

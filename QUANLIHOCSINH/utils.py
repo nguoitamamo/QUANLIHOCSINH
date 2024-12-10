@@ -96,6 +96,8 @@ def SaveIntoSession(dshocsinh):
 
 
 
+
+
 def SuggestedLop(ds, keyword):
   
     res = []
@@ -120,6 +122,33 @@ def SuggestedLop(ds, keyword):
     return res
 
 
-# if __name__ == '__main__':
-#     with app.app_context():
-#         # print(SuggestedLop("app"))
+def CalTinhDiemTb( listdiem15phut , listdiem1tiet, listcuoiki, max15phut ,max1tiet):
+
+    tb15phut = 0
+    tb1tiet = 0
+    cuoiki =0
+
+    if len(listdiem15phut) > 0:
+        tb15phut = sum( listdiem15phut) / max15phut
+    if len(listdiem1tiet):
+        tb1tiet = sum( listdiem1tiet) / max1tiet
+    if len(listcuoiki) > 0:
+        cuoiki = listcuoiki[0]
+
+    return round(tb15phut * app.config["15PHUT"] + tb1tiet * app.config["1TIET"] + cuoiki * app.config["CUOIKY"], 1)
+
+
+
+listdiem15phut = []
+listdiem1tiet = []
+listcuoiki = []
+
+
+
+
+
+if __name__ == '__main__':
+    with app.app_context():
+        # print(SuggestedLop("app"))
+
+        print(CalTinhDiemTb(listdiem15phut, listdiem1tiet, listcuoiki))

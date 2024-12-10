@@ -22,6 +22,12 @@ app.config["MAX_SS_LOP"] = 40
 # app.config['SESSION_COOKIE_NAME'] = 'my_session_cookie'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 
+app.config["15PHUT"] = 0.2
+app.config["1TIET"] = 0.3
+app.config["CUOIKY"] = 0.5
+
+
+
 
 
 db = SQLAlchemy(app = app )

@@ -1,130 +1,136 @@
 {% extends 'layout/base.html' %}
 
 
-{% block title %} Nhập điểm {% endblock %}
+{% block title %} Xuất điểm {% endblock %}
 
 
 {% block css %}
     <link rel="stylesheet" href="{{ url_for('static', filename = 'css/nhapdiem.css') }}">
+    <style>
+
+        .btn-sua {
+            background-color: #ade6ad;
+            height: 50px;
+            width: 200px;
+            border-radius: 10px;
+        }
+
+        .btn_timkiem {
+            width: 350px;
+            height: 50px;
+            border: 1px solid;
+            border-radius: 10px;
+        }
+
+        th,
+        td {
+            width: 20%;
+        }
+
+
+    </style>
 
 {% endblock %}
 {% block content %}
 
+
+
     <div class="container mt-3">
-        <div style="display: flex">
+
+
+        <div style="display: flex; justify-content: space-between">
             <h3>BẢNG ĐIỂM MÔN HỌC</h3>
-            <div class="btn_danhsachhs" style="display: flex; margin-left: auto;">
-                <div>
-                    <button class="btn-save-infor-hocsinh" style="margin: 0  ">
-                        Lưu tạm
-                    </button>
-                </div>
-                <div>
-                    <button class="btn-save-infor-hocsinh" style="margin: 0">
-                        Lưu
-                    </button>
-                </div>
+            <div>
+                <input type="text" class="btn_timkiem"
+                       value="{{ input }}"
+                       placeholder="Huỳnh A, huynhngoctruong@gmail.com, sdt, ...">
+                <button class="btn btn-sua">
+                    Tìm kiếm
+                </button>
             </div>
+
         </div>
-        <form action="{{ url_for('getinfolop') }}" method="POST" class="form-container">
+
+
+        <form action="{{ url_for('xuatdiemlop') }}" method="POST" class="form-container">
+
+
             <div class="form-row">
+
                 <label for="lopLabel">Lớp: </label>
-                <input type="text" id="lopLabel" name="lop">
-                <select name="dslop" onchange="updateLabel(this, 'lopLabel')">
+                <input type="text" id="lopLabel" name="lop" autocomplete="off" list="lopLabels"
+                       value={{ lop }}>
+
+                <datalist id="lopLabels">
+                    {% for i in dslopcheckbox %}
+                        <option value="{{ i.TenLop }}">
+                    {% endfor %}
+                </datalist>
+
+                <select name="dslop" id="dslop" onclick="updateLabel(this, 'lopLabel')">
                     <option value="">Lớp</option>
-                    {% for i in lop %}
-                        <option value="{{ i.TenLop }}">{{ i.TenLop }}</option>
+
+                    {% for i in dslopcheckbox %}
+                        {% if i.MaLop == malop %}
+                            <option selected value="{{ i.MaLop }}">{{ i.TenLop }}</option>
+
+                        {% else %}
+                            <option value="{{ i.MaLop }}">{{ i.TenLop }}</option>
+                        {% endif %}
                     {% endfor %}
                 </select>
-
                 <label for="monhocLabel">Môn học: </label>
-                <input type="text" id="monhocLabel" name="monhoc">
-                <select name="dsmonhoc" onchange="updateLabel(this, 'monhocLabel')">
+                <input type="text" id="monhocLabel" name="monhoc" autocomplete="off" list="monhocLabels"
+                       value={{ monhoc }}>
+
+                <datalist id="monhocLabels">
+
+                </datalist>
+                <select name="dsmonhoc" onclick="updateLabel(this, 'monhocLabel')">
                     <option value="">Môn học</option>
                 </select>
             </div>
             <div class="form-row">
-                <label for="hocky">Học kỳ: </label>
-                <input type="text" id="hocky" name="hocky">
                 <label for="namhoc">Năm học: </label>
-                <input type="text" id="namhoc" name="namhoc">
+                <input type="text" id="namhoc" name="namhoc" value={{ namhoc }}>
             </div>
-            <button type="submit">gửi</button>
+            <button type="submit" class="btn-save-infor-hocsinh" style="margin-bottom: 15px ">Xuất</button>
+
         </form>
 
 
-        <table class="table table-striped custom-table" id="scoreTable">
-            <thead>
-            <tr>
-                <th rowspan="2">STT</th>
-                <th rowspan="2">Họ tên</th>
+        <div>
+            <table class="table table-striped custom-table" style="margin-bottom: 0; border-collapse: collapse;">
+                <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Họ tên</th>
 
-                <th colspan="{{ session.get('socot15phut') }}" id="score15Header" style="width: 20%;">
-                    Điểm 15 phút
-                    <button onclick="Column15phut('them')">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                    <button onclick="Column15phut('xoa')">
-                        <i class="fa-solid fa-minus"></i>
-                    </button>
-                </th>
+                    <th>Điểm TB HK1</th>
+                    <th>Điểm TB HK2</th>
+                </tr>
+                </thead>
+            </table>
 
-                <th colspan="{{ session.get('socot1tiet') }}" id="score1Header" style="width: 20%;">
-                    Điểm 1 tiết
-                    <button onclick="Column1tiet('them')">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                    <button onclick="Column1tiet('xoa')">
-                        <i class="fa-solid fa-minus"></i>
-                    </button>
-                </th>
+            <div style="height: 450px; overflow-y: auto; margin-bottom: 50px">
+                <table id="scoreTable" class="table table-striped custom-table"
+                       style="border-collapse: collapse;">
+                    <tbody>
+                    {% for i in dshocsinh %}
 
-                <th rowspan="2">Điểm thi</th>
-            </tr>
-            <tr id="subHeader">
-                {% for i in range(1, session.get('socot15phut') + 1) %}
-                    <th class="score15" style="width: 10%;">{{ i }}</th>
-                {% endfor %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ i['HoTen'] }}</td>
 
-                {% for i in range(1, session.get('socot1tiet') + 1) %}
-                    <th class="score1" style="width: 10%;">{{ i }}</th>
-                {% endfor %}
-            </tr>
-            </thead>
-            <tbody>
-
-
-            {% for ma_lop, danh_sach_hoc_sinh in dshocsinh.items() %}
-                {% for hs in danh_sach_hoc_sinh %}
-                    <tr>
-                        <td>1</td>
-                        <td>{{ hs['HoTen'].Ho }} {{ hs['HoTen'].Ten }}</td>
-
-                        <!-- Hiển thị điểm 15 phút -->
-                        {% for diem in hs['15phut'] %}
-                            <td class="score15"><input type="text" value="{{ diem }}"></td>
-                        {% endfor %}
-
-                        <!-- Hiển thị điểm 1 tiết -->
-                        {% for diem in hs['1tiet'] %}
-                            <td class="score1"><input type="text" value="{{ diem }}"></td>
-                        {% endfor %}
-
-                        <!-- Hiển thị điểm cuối kì -->
-                        {% for diem in hs['diemthi'] %}
-                            <td><input type="text" value="{{ diem }}"></td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            {% endfor %}
-
-            </tbody>
-        </table>
-
-        <script src={{ url_for('static', filename = 'js/nhapdiem.js') }}>
-
-
-        </script>
+                            <td>{{ i['TBHK1'] }}</td>
+                            <td>{{ i['TBHK2'] }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
+    <script src={{ url_for('static', filename = 'js/nhapdiem.js') }}></script>
 
 {% endblock %}
