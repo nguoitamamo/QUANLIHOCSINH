@@ -9,20 +9,19 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         .stt {
-
-            width: 50px;
+            width: 4%;
         }
-
         .hoten {
-            width: 300px;
+            width: 15%;
         }
 
-        .cot15phut {
-            width: 100px;
+        .cot15phut,
+        .cot1tiet{
+            width: 8%;
         }
-
-        .cot1tiet {
-            width: 100px;
+        .diemthi,
+        .lop{
+            width: 10%;
         }
 
         table + div {
@@ -71,34 +70,45 @@
         {##}
         {#        </form>#}
 
-{#        <div class="form-container">#}
-{#            <form action="/action_page.php" method="POST">#}
-{#                <div class="form-row" style="flex-direction: row;">#}
-{#                    <input type="text" id="searchhocsinh" name="searchhocsinh" autocomplete="off"#}
-{#                           list="searchhocsinhs"#}
-{#                           placeholder="La Trinh, huynhngoctruong@gmail.com, 0369185111...."#}
-{#                           style="border-radius: 15px;"#}
-{#                           value={{ searchhocsinh }}>#}
-{##}
-{##}
-{#                    <datalist id="searchhocsinhs">#}
-{#                        <option value="huynhgn">#}
-{#                    </datalist>#}
-{#                    <button type="submit" class="btn-save-infor-hocsinh">Tìm kiếm</button>#}
-{#                </div>#}
-{#            </form>#}
-{#        </div>#}
+        {#        <div class="form-container">#}
+        {#            <form action="/action_page.php" method="POST">#}
+        {#                <div class="form-row" style="flex-direction: row;">#}
+        {#                    <input type="text" id="searchhocsinh" name="searchhocsinh" autocomplete="off"#}
+        {#                           list="searchhocsinhs"#}
+        {#                           placeholder="La Trinh, huynhngoctruong@gmail.com, 0369185111...."#}
+        {#                           style="border-radius: 15px;"#}
+        {#                           value={{ searchhocsinh }}>#}
+        {##}
+        {##}
+        {#                    <datalist id="searchhocsinhs">#}
+        {#                        <option value="huynhgn">#}
+        {#                    </datalist>#}
+        {#                    <button type="submit" class="btn-save-infor-hocsinh">Tìm kiếm</button>#}
+        {#                </div>#}
+        {#            </form>#}
+        {#        </div>#}
 
 
         <form action="{{ url_for('nhapdiemlop') }}" method="POST" class="form-container">
 
             <div class="form-row">
-
                 <label for="lopLabel">Tìm kiếm học sinh: </label>
-                <input type="text" id="searchhocsinh" name="searchhocsinh" autocomplete="off"
-                       placeholder="La Trinh, huynhngoctruong@gmail.com, 0369185111...."
-                       value={{ searchhocsinh }}>
+                <div>
 
+                    <input type="text" id="searchhocsinh" name="searchhocsinh" autocomplete="off"
+                           placeholder="La Trinh, huynhngoctruong@gmail.com, 0369185111...."
+                           value={{ searchhocsinh }}>
+                    <select name="dskhoi" id="dskhoi" onclick="LoadAllMon()">
+                        <option  value="0">Khối</option>
+                        {% for i in dskhoi %}
+                            {% if i.MaKhoi == makhoi %}
+                                <option selected value="{{ i.MaKhoi }}">{{ i.TenKhoi }}</option>
+                            {% else %}
+                                <option value="{{ i.MaKhoi }}">{{ i.TenKhoi }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
                 <label for="lopLabel">Lớp: </label>
                 <input type="text" id="lopLabel" name="lop" autocomplete="off" list="lopLabels"
                        value={{ lop }}>
@@ -174,6 +184,9 @@
                     </th>
 
                     <th rowspan="2" class="diemthi">Điểm thi</th>
+                    {% if key %}
+                    <th rowspan="2" class ="lop" >Lớp</th>
+                    {% endif %}
                 </tr>
                 <tr id="subHeader">
                     {% for i in range(1, session.get('socot15phut') + 1) %}
@@ -217,6 +230,11 @@
                             {% else %}
                                 <td class="score15 diemthi"><input type="text"></td>
                             {% endif %}
+
+
+                            {% if key %}
+                                <td class="lop">{{ hs['MaLop'][1:].split('_')[0] }}</td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -226,20 +244,20 @@
 
 
         <script src={{ url_for('static', filename = 'js/nhapdiem.js') }}></script>
-{#        <script>#}
-            {#function UpdateSelect() {#}
-            {#    for (let i = 0; i < lop.options.length; i++) {#}
-            {#        if (lop.options[i].text === searchInputLop.value) {#}
-            {#            lop.selectedIndex = i;#}
-            {##}
-            {#            break;#}
-            {#        }#}
-            {#    }#}
-            {#    LoadMonOfLop();#}
-{#            }#}
-{##}
-{##}
-{#        </script>#}
+        {#        <script>#}
+        {#function UpdateSelect() {#}
+        {#    for (let i = 0; i < lop.options.length; i++) {#}
+        {#        if (lop.options[i].text === searchInputLop.value) {#}
+        {#            lop.selectedIndex = i;#}
+        {##}
+        {#            break;#}
+        {#        }#}
+        {#    }#}
+        {#    LoadMonOfLop();#}
+        {#            }#}
+        {##}
+        {##}
+        {#        </script>#}
     </div>
 
 {% endblock %}

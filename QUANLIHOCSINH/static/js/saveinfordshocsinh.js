@@ -176,11 +176,6 @@ function DevisionClassBegin0() {
 }
 
 
-function CreateLop(solop) {
-
-
-    alert(solop)
-}
 
 
 // function CheckAddAllHocSinh(obj) {

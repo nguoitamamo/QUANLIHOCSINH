@@ -21,8 +21,12 @@
 
 
 .form-row div {
+    display: flex;
     flex: 1;
-    margin-right: 10px;
+}
+
+.form-row div input {
+    flex: 7;
 }
 
 

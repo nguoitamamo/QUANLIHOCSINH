@@ -38,24 +38,29 @@
     <div class="container mt-3">
 
 
-        <div style="display: flex; justify-content: space-between">
-            <h3>BẢNG ĐIỂM MÔN HỌC</h3>
-            <div>
-                <input type="text" class="btn_timkiem"
-                       value="{{ input }}"
-                       placeholder="Huỳnh A, huynhngoctruong@gmail.com, sdt, ...">
-                <button class="btn btn-sua">
-                    Tìm kiếm
-                </button>
-            </div>
-
-        </div>
-
 
         <form action="{{ url_for('xuatdiemlop') }}" method="POST" class="form-container">
 
 
             <div class="form-row">
+                <h3>BẢNG ĐIỂM MÔN HỌC</h3>
+                <label for="lopLabel">Tìm kiếm học sinh: </label>
+                <div>
+
+                    <input type="text" id="searchhocsinh" name="searchhocsinh" autocomplete="off"
+                           placeholder="La Trinh, huynhngoctruong@gmail.com, 0369185111...."
+                           value={{ searchhocsinh }}>
+                    <select name="dskhoi" id="dskhoi" onclick="LoadAllMon()">
+                        <option value="0">Khối</option>
+                        {% for i in dskhoi %}
+                            {% if i.MaKhoi == makhoi %}
+                                <option selected value="{{ i.MaKhoi }}">{{ i.TenKhoi }}</option>
+                            {% else %}
+                                <option value="{{ i.MaKhoi }}">{{ i.TenKhoi }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
 
                 <label for="lopLabel">Lớp: </label>
                 <input type="text" id="lopLabel" name="lop" autocomplete="off" list="lopLabels"

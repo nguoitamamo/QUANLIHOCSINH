@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 import os
 import pandas as pd
 from math import ceil
+from dao import GetLopByMa
 
 dataframe1 = pd.read_excel(os.getcwd() + '\\templates\\layout\\infor.xlsx', dtype={"Số điện thoại": str})
 
@@ -120,6 +121,32 @@ def SuggestedLop(ds, keyword):
         res[-1].append(ds[l + j])
 
     return res
+
+def DiemHocSinh(mahocsinh, hoten, listdiem15phuthk1 , listdiem1tiethk1, listdiemcuoikihk1,
+                                    listdiem15phuthk2,listdiem1tiethk2, listdiemcuoikihk2,
+                                    max_15phut_hocki1,max_1tiet_hocki1,
+                                    max_15phut_hocki2,max_1tiet_hocki2 , key = None, namtaolop = None):
+
+    return  {
+        "MaHocSinh": mahocsinh,
+        "HoTen": hoten,
+        "TBHK1": CalTinhDiemTb(listdiem15phuthk1,
+                                listdiem1tiethk1,
+                                listdiemcuoikihk1,
+                                max15phut=max_15phut_hocki1,
+                                max1tiet=max_1tiet_hocki1),
+
+        "TBHK2": CalTinhDiemTb( listdiem15phuthk2,
+                                listdiem1tiethk2,
+                                listdiemcuoikihk2,
+                                max15phut=max_15phut_hocki2,
+                                max1tiet=max_1tiet_hocki2),
+
+        "MaLop": GetLopByMa(mahocsinh = mahocsinh, namtaolop = namtaolop) if key else None
+
+    }
+
+
 
 
 def CalTinhDiemTb( listdiem15phut , listdiem1tiet, listcuoiki, max15phut ,max1tiet):

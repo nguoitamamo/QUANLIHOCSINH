@@ -40,15 +40,15 @@
                                                  href="{{ url_for('lapdanhsachlop',page = i) }}">{{ i }}</a></li>
                     {% endfor %}
                 </div>
-                <div>
-                    <input type="text" class="btn_timkiem"
-                           value="{{ input }}"
+                <form action="{{ url_for('timkkiemhocsinhonekhoi') }}" method="post">
+                    <input type="text" class="btn_timkiem" name="textinput"
+                           value="{{ textinput }}"
                            placeholder="Huỳnh A, huynhngoctruong@gmail.com, sdt, ...">
-                    <button class="btn btn-sua" onclick="SearchHocSinh(document.querySelector('.btn_timkiem').value)">
+                    <button class="btn btn-sua" onclick="TimKiemHocSinhNew()">
                         Tìm kiếm
                     </button>
-                </div>
 
+                </form>
 
                 <div>
                     <button class="btn btn-sua"><a href="{{ url_for('dieuchinhdanhsachlop') }}"
@@ -63,8 +63,11 @@
 
 
     <div class="container mt-3">
-        <h2>Lớp: {{ lop }}</h2>
-        <p>Sĩ số: {{ lophocsinh | length }}</p>
+        {% if key %}
+        {% else %}
+            <h2>Lớp: {{ lop }}</h2>
+            <p>Sĩ số: {{ lophocsinh | length }}</p>
+        {% endif %}
         <div>
             <table class="table table-striped" style="width: 100%; border-collapse: collapse; margin-bottom: 0">
                 <thead>
@@ -73,7 +76,13 @@
                     <th class="hoten">Họ tên</th>
                     <th class="gioitinh">Giới tính</th>
                     <th class="namsinh">Năm sinh</th>
-                    <th class="diachi">Địa chỉ</th>
+                    <th class="diachi">
+                        {% if key %}
+                            Lớp
+                        {% else %}
+                            Địa chỉ
+                        {% endif %}
+                    </th>
                 </tr>
                 </thead>
             </table>
@@ -88,7 +97,11 @@
                                 <td class="hoten">{{ info.Ho }} {{ info.Ten }}</td>
                                 <td class="gioitinh">{{ info.GioiTinh }}</td>
                                 <td class="namsinh">{{ info.NgaySinh.strftime('%Y') }}</td>
-                                <td class="diachi">{{ info.DiaChi }}</td>
+                                {% if key %}
+                                    <td class="diachi">{{ info.MaLop[1:].split('_')[0] }}</td>
+                                {% else %}
+                                    <td class="diachi">{{ info.DiaChi }}</td>
+                                {% endif %}
 
                             {% endfor %}
                         </tr>

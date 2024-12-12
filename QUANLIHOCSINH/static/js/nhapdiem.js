@@ -225,6 +225,37 @@ function saveTableData(state) {
 
 }
 
+function LoadAllMon() {
+
+    fetch('/user/nhapdiem/loadallmon', {
+        method: 'post',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const monhocs = data.dsmonhoc;
+
+                const monHocSelect = document.querySelector("select[name='dsmonhoc']");
+
+                monHocSelect.innerHTML = '';
+
+                monhocs.forEach(mon => {
+
+                    const option = document.createElement("option");
+                    option.text = `${mon}`;
+                    monHocSelect.add(option);
+                });
+
+            } else {
+                alert(data.error);
+            }
+        })
+
+}
+
+
 function LoadMonOfLop() {
 
 

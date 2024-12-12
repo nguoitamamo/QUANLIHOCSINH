@@ -22,17 +22,23 @@ function LoadLopOfKhoi(makhoi) {
 function SearchHocSinh(input) {
 
     alert(input)
-    fetch(`/user/danhsachlop/timkiemhocsinh/${input}`, {
+
+
+}
+
+
+function TimKiemHocSinhNew() {
+
+    const textinput = document.querySelector('.btn_timkiem').value
+
+
+
+    fetch(`/user/danhsachlop/timkiemhocsinh/${textinput}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         }
 
-    }).then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.reload();
-            }
-        })
+    })
 
 }
