@@ -8,7 +8,7 @@ from email.mime.text import MIMEText
 import os
 import pandas as pd
 from math import ceil
-from dao import GetLopByMa
+from dao import GetLopByMa, GetHocSinhByTenHoTenEmailPhone, LoadLop
 
 dataframe1 = pd.read_excel(os.getcwd() + '\\templates\\layout\\infor.xlsx', dtype={"Số điện thoại": str})
 
@@ -96,11 +96,7 @@ def SaveIntoSession(dshocsinh):
 #     def __init__(self):
 
 
-
-
-
 def SuggestedLop(ds, keyword):
-  
     res = []
 
     l, r = 0, len(ds) - 1
@@ -114,7 +110,6 @@ def SuggestedLop(ds, keyword):
         while l <= r and (len(ds[r]) <= i or ds[r][i] != c):
             r -= 1
 
-
     res.append([])
     remain = r - l + 1
     for j in range(min(5, remain)):
@@ -122,60 +117,81 @@ def SuggestedLop(ds, keyword):
 
     return res
 
-def DiemHocSinh(mahocsinh, hoten, listdiem15phuthk1 , listdiem1tiethk1, listdiemcuoikihk1,
-                                    listdiem15phuthk2,listdiem1tiethk2, listdiemcuoikihk2,
-                                    max_15phut_hocki1,max_1tiet_hocki1,
-                                    max_15phut_hocki2,max_1tiet_hocki2 , key = None, namtaolop = None):
 
-    return  {
+def CalDiemTbHocSinh(diemhk1, diemhk2, max_15phut_hocki1,max_1tiet_hocki1,
+                     max_15phut_hocki2,max_1tiet_hocki2, namtaolop= None):
+
+    dshocsinh= []
+    for i in range(len(diemhk1['diemdshocsinh'])):
+        dshocsinh.append(DiemHocSinh(mahocsinh=diemhk1['diemdshocsinh'][i]['MaHocSinh'],
+                                           hoten=diemhk1['diemdshocsinh'][i]['HoTen'],
+                                           listdiem15phuthk1=diemhk1['diemdshocsinh'][i]['15phut'],
+                                           listdiem1tiethk1=diemhk1['diemdshocsinh'][i]['1tiet'],
+                                           listdiem15phuthk2=diemhk2['diemdshocsinh'][i]['15phut'],
+                                           listdiem1tiethk2=diemhk2['diemdshocsinh'][i]['1tiet'],
+                                           listdiemcuoikihk1=diemhk1['diemdshocsinh'][i]['diemthi'],
+                                           listdiemcuoikihk2=diemhk2['diemdshocsinh'][i]['diemthi'],
+                                           max_15phut_hocki1=max_15phut_hocki1,
+                                           max_1tiet_hocki1=max_1tiet_hocki1,
+                                           max_15phut_hocki2=max_15phut_hocki2,
+                                           max_1tiet_hocki2=max_1tiet_hocki2,
+                                           namtaolop=namtaolop))
+    return dshocsinh
+
+def InfoDiemHocSinh(inputsearch, malop, mamonhoc, namhoc, namtaolop = None):
+    if namtaolop:
+        hocsinhs = GetHocSinhByTenHoTenEmailPhone(inputsearch=inputsearch, namtaolop=namtaolop)
+    else:
+        hocsinhs = GetHocSinhByTenHoTenEmailPhone(inputsearch=inputsearch, malop=malop)
+
+    hocsinhs = [hs['MaHocSinh'] for hs in hocsinhs]
+
+    diemhk1 = LoadLop(listmahocsinh=hocsinhs, key="diem", mamonhoc=mamonhoc, mahocki='1_' + namhoc)
+    diemhk2 = LoadLop(listmahocsinh=hocsinhs, key="diem", mamonhoc=mamonhoc, mahocki='2_' + namhoc)
+
+    max_15phut_hocki1 = diemhk1['max15phut']
+    max_1tiet_hocki1 = diemhk1['max1tiet']
+    max_15phut_hocki2 = diemhk2['max15phut']
+    max_1tiet_hocki2 = diemhk2['max1tiet']
+
+    return diemhk1, diemhk2, max_15phut_hocki1, max_1tiet_hocki1, max_15phut_hocki2, max_1tiet_hocki2
+
+
+
+def DiemHocSinh(mahocsinh, hoten, listdiem15phuthk1, listdiem1tiethk1, listdiemcuoikihk1,
+                listdiem15phuthk2, listdiem1tiethk2, listdiemcuoikihk2,
+                max_15phut_hocki1, max_1tiet_hocki1,
+                max_15phut_hocki2, max_1tiet_hocki2,  namtaolop=None ):
+    return {
         "MaHocSinh": mahocsinh,
         "HoTen": hoten,
         "TBHK1": CalTinhDiemTb(listdiem15phuthk1,
-                                listdiem1tiethk1,
-                                listdiemcuoikihk1,
-                                max15phut=max_15phut_hocki1,
-                                max1tiet=max_1tiet_hocki1),
+                               listdiem1tiethk1,
+                               listdiemcuoikihk1,
+                               max15phut=max_15phut_hocki1,
+                               max1tiet=max_1tiet_hocki1),
 
-        "TBHK2": CalTinhDiemTb( listdiem15phuthk2,
-                                listdiem1tiethk2,
-                                listdiemcuoikihk2,
-                                max15phut=max_15phut_hocki2,
-                                max1tiet=max_1tiet_hocki2),
+        "TBHK2": CalTinhDiemTb(listdiem15phuthk2,
+                               listdiem1tiethk2,
+                               listdiemcuoikihk2,
+                               max15phut=max_15phut_hocki2,
+                               max1tiet=max_1tiet_hocki2),
 
-        "MaLop": GetLopByMa(mahocsinh = mahocsinh, namtaolop = namtaolop) if key else None
+        "MaLop": GetLopByMa(mahocsinh=mahocsinh, namtaolop=namtaolop)[0] if namtaolop else None
 
     }
 
 
-
-
-def CalTinhDiemTb( listdiem15phut , listdiem1tiet, listcuoiki, max15phut ,max1tiet):
-
+def CalTinhDiemTb(listdiem15phut, listdiem1tiet, listcuoiki, max15phut, max1tiet):
     tb15phut = 0
     tb1tiet = 0
-    cuoiki =0
+    cuoiki = 0
 
     if len(listdiem15phut) > 0:
-        tb15phut = sum( listdiem15phut) / max15phut
+        tb15phut = sum(listdiem15phut) / max15phut
     if len(listdiem1tiet):
-        tb1tiet = sum( listdiem1tiet) / max1tiet
+        tb1tiet = sum(listdiem1tiet) / max1tiet
     if len(listcuoiki) > 0:
         cuoiki = listcuoiki[0]
 
     return round(tb15phut * app.config["15PHUT"] + tb1tiet * app.config["1TIET"] + cuoiki * app.config["CUOIKY"], 1)
-
-
-
-listdiem15phut = []
-listdiem1tiet = []
-listcuoiki = []
-
-
-
-
-
-if __name__ == '__main__':
-    with app.app_context():
-        # print(SuggestedLop("app"))
-
-        print(CalTinhDiemTb(listdiem15phut, listdiem1tiet, listcuoiki))

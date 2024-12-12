@@ -38,7 +38,6 @@
     <div class="container mt-3">
 
 
-
         <form action="{{ url_for('xuatdiemlop') }}" method="POST" class="form-container">
 
 
@@ -52,7 +51,7 @@
                            value={{ searchhocsinh }}>
                     <select name="dskhoi" id="dskhoi" onclick="LoadAllMon()">
                         <option value="0">Khối</option>
-                        {% for i in dskhoi %}
+                        {% for i in dskhois %}
                             {% if i.MaKhoi == makhoi %}
                                 <option selected value="{{ i.MaKhoi }}">{{ i.TenKhoi }}</option>
                             {% else %}
@@ -110,9 +109,11 @@
                 <tr>
                     <th>STT</th>
                     <th>Họ tên</th>
-
                     <th>Điểm TB HK1</th>
                     <th>Điểm TB HK2</th>
+                    {% if key %}
+                        <th>Lớp</th>
+                    {% endif %}
                 </tr>
                 </thead>
             </table>
@@ -129,6 +130,9 @@
 
                             <td>{{ i['TBHK1'] }}</td>
                             <td>{{ i['TBHK2'] }}</td>
+                            {% if key %}
+                                <td>{{ i['MaLop'][1:].split('_')[0] }}</td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
                     </tbody>

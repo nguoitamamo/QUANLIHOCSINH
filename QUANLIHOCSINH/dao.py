@@ -882,4 +882,4 @@ if __name__ == '__main__':
         # print(GetLopByMa(mahocsinh="HS587_52", namtaolop="2023"))
         # print(GetHocSinhByTenHoTenEmailPhone(inputsearch= "Trinh", namtaolop="2023") )
 
-        print(GetMaHocSinhOfLop(malop = 'L10A1_2023'))
+        print(GetHocSinhByTenHoTenEmailPhone(inputsearch="La", namtaolop="2023"))
