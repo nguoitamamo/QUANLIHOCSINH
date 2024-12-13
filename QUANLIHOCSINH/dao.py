@@ -863,14 +863,6 @@ def them():
     db.session.commit()
 
 
-# c
-#     for i in range(1, 11):
-#         lop = models.Lop( MaLop = "L10A" + str(i) , TenLop = "10A" + str(i) , SiSo = 40 , MaKhoi =1 )
-#         db.session.add(lop)
-#
-#     db.session.commit()
-
-
 if __name__ == '__main__':
     with app.app_context():
         # lop_hocsinh = LoadLop(malop = 'L10A1_2023',key = "diem",  mamonhoc='MH1', mahocki=1)

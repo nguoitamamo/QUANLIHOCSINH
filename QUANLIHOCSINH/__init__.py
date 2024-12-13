@@ -13,8 +13,8 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
 
 
-# app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:594362@localhost/QUANLIHOCSINHFINAL"
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:%s@localhost/QUANLIHOCSINHFINAL" % quote('Admin@123')
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:594362@localhost/QUANLIHOCSINHFINAL"
+# app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:%s@localhost/QUANLIHOCSINHFINAL" % quote('Admin@123')
 app.config["PAGE_SIZE"] = 1
 
 app.config["MAX_SS_LOP"] = 40
