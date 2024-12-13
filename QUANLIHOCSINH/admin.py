@@ -1,19 +1,23 @@
-
+from pstats import Stats
 
 from QUANLIHOCSINH import app, db
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
+from flask_admin import BaseView, expose
 import models
+from flask import redirect,request
 import dao
-
+from flask_login import current_user, logout_user
 admin = Admin(app=app, name="E-commerce Administration", template_mode='bootstrap4')
 
-class BaseView(ModelView):
+class AdminView(ModelView):
     column_display_pk = True
     can_export = True
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.role.__eq__(models.Role.Admin)
 
 
-class ThongbaoView(BaseView):
+class ThongbaoView(AdminView):
 
     column_list = ['PermissionID', 'UserID']
 
@@ -27,7 +31,7 @@ class ThongbaoView(BaseView):
     list_template  = 'admin/thongbao.html'
 
 
-class ViewMonHoc(BaseView):
+class ViewMonHoc(AdminView):
     # column_list = ['MaMonHoc', 'UserID']
 
     # column_searchable_list = [''] tìm kieesm
@@ -39,7 +43,7 @@ class ViewMonHoc(BaseView):
     }
 
 
-class ViewAccout(BaseView):
+class ViewAccout(AdminView):
 
 
     # def get_query(self):
@@ -59,7 +63,7 @@ class ViewAccout(BaseView):
 
     }
 
-class ThongTinUser(BaseView):
+class ThongTinUser(AdminView):
 
     column_list = ['Ho', 'Ten', 'NgaySinh', 'GioiTinh', 'DiaChi', 'Email']
 
@@ -82,7 +86,7 @@ class ThongTinUser(BaseView):
         'Email': 'Email'
     }
 
-class ViewLop(BaseView):
+class ViewLop(AdminView):
 
     # column_list = ['MaMonHoc', 'UserID']
 
@@ -96,7 +100,7 @@ class ViewLop(BaseView):
     }
 
 
-class ViewLopHocSinh(BaseView):
+class ViewLopHocSinh(AdminView):
 
     can_export = True
     column_list = ['MaLop', 'MaHocSinh', 'NamTaoLop']
@@ -111,7 +115,7 @@ class ViewLopHocSinh(BaseView):
     }
 
 
-class ViewPerMission(BaseView):
+class ViewPerMission(AdminView):
     can_export = True
 
     column_searchable_list = ['Value']
@@ -122,6 +126,62 @@ class ViewPerMission(BaseView):
         'Value': 'Quyền'
     }
 
+class AuthenticatedView(BaseView):
+    def is_accessible(self):
+        return current_user.is_authenticated
+
+
+class LogoutView(AuthenticatedView):
+    @expose('/')
+    def index(self):
+        logout_user()
+        return redirect('/admin')
+
+class ThongKeView(AuthenticatedView):
+    @expose('/')
+    def index(self):
+        danh_sach_mon_hoc = dao.Load_MonHoc()
+        danh_sach_hoc_ki = dao.load_hoc_ki()
+
+        return self.render('admin/baocaothongke.html', danh_sach_mon_hoc=danh_sach_mon_hoc, danh_sach_hoc_ki=danh_sach_hoc_ki)
+
+    @expose('/submit', methods=["POST"])
+    def submit(self):
+        danh_sach_mon_hoc = dao.Load_MonHoc()
+        danh_sach_hoc_ki = dao.load_hoc_ki()
+
+        MonHoc = request.form.get('MonHoc')
+        HocKi = request.form.get('HocKi')
+
+        danh_sach_lop_hoc = dao.LoadLopHoc(MonHoc, HocKi)
+        TenMonHoc = ""
+        TenHocKi = ""
+        TenNamHoc = ""
+        ds_lop = []
+
+        for MH in danh_sach_mon_hoc:
+            if MonHoc == MH.MaMonHoc:
+                TenMonHoc = MH.TenMonHoc
+        for Hk in danh_sach_hoc_ki:
+            if HocKi == Hk.MaHocKi:
+                TenHocKi = Hk.TenHocKi
+                TenNamHoc = Hk.NamHoc
+
+        stt = 0
+        for lop in danh_sach_lop_hoc:
+            stt += 1
+            soluongdat = dao.tinh_so_luong_dat_cua_lop(lop.MaLop, MonHoc, HocKi)
+            tile = round((soluongdat / lop.SiSo) * 100, 2) if lop.SiSo != 0 else 0
+            ds_lop.append([stt, lop.TenLop, lop.SiSo, soluongdat, tile])
+
+        return self.render('admin/baocaothongke.html',
+                           danh_sach_mon_hoc=danh_sach_mon_hoc,
+                           danh_sach_hoc_ki=danh_sach_hoc_ki,
+                           TenMonHoc=TenMonHoc,
+                           TenHocKi=TenHocKi,
+                           TenNamHoc=TenNamHoc,
+                           Lop=ds_lop)
+
 admin.add_view(ViewAccout(models.Account, db.session, name="Tài khoản"))
 admin.add_view(ThongTinUser(models.UserInfor, db.session, name="Thông tin tài khoản"))
 admin.add_view(ViewMonHoc(models.MonHoc, db.session, name="Môn học"))
@@ -130,3 +190,6 @@ admin.add_view(ViewLopHocSinh(models.LopHocSinh, db.session, name="Lớp-Học s
 admin.add_view(ViewPerMission(models.Permission, db.session, name="Quyền"))
 
 admin.add_view(ThongbaoView(models.PermissionUser, db.session, name="Thông báo "))
+
+admin.add_view(ThongKeView(name='Thống kê'))
+admin.add_view(LogoutView(name='Đăng xuất'))
