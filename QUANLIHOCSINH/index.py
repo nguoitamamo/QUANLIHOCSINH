@@ -368,7 +368,7 @@ def diemdshocsinh(malop, monhoc, hocky, namhoc, state):
 def xuatdiem():
     lop = dao.LoadLopEdHoc()
 
-    return render_template("xuatdiem.html", dslopcheckbox=lop,  dskhoi=dao.LoadKhoi())
+    return render_template("xuatdiem.html", dslopcheckbox=lop,  dskhois=dao.LoadKhoi())
 
 
 @app.route('/user/dieuchinhdanhsachlop')
@@ -820,6 +820,8 @@ def xuatdiemlop():
 
         namhoc = data['namhoc'].replace(" ", "")
 
+        dslop = dao.LoadLopEdHoc()
+
         diemhk1 = {}
         diemhk2 = {}
 
@@ -834,40 +836,20 @@ def xuatdiemlop():
         if data['searchhocsinh']:
 
             if makhoi == 0:
-                hocsinhs = dao.GetHocSinhByTenHoTenEmailPhone(inputsearch=data['searchhocsinh'], malop=data['dslop'])
-
-                hocsinhs = [ hs['MaHocSinh'] for hs in hocsinhs]
-
-                diemhk1 = dao.LoadLop(listmahocsinh = hocsinhs, key="diem",
-                                      mamonhoc=mamonhoc, mahocki='1_' + namhoc)
-
-                diemhk2 = dao.LoadLop(listmahocsinh = hocsinhs, key="diem",
-                                      mamonhoc=mamonhoc, mahocki='2_' + namhoc)
-
-                max_15phut_hocki1 = diemhk1['max15phut']
-                max_1tiet_hocki1 = diemhk1['max1tiet']
-
-                max_15phut_hocki2 = diemhk2['max15phut']
-                max_1tiet_hocki2 = diemhk2['max1tiet']
-
+                diemhk1, diemhk2, max_15phut_hocki1, max_1tiet_hocki1, max_15phut_hocki2, max_1tiet_hocki2 = utils.InfoDiemHocSinh(
+                    inputsearch = data['searchhocsinh'] , malop = data['dslop'], mamonhoc = mamonhoc, namhoc = namhoc
+                )
 
             else:
+                diemhk1, diemhk2, max_15phut_hocki1, max_1tiet_hocki1, max_15phut_hocki2, max_1tiet_hocki2 = utils.InfoDiemHocSinh(
+                    inputsearch=data['searchhocsinh'], malop=data['dslop'], mamonhoc=mamonhoc, namhoc=namhoc, namtaolop = namtaolop
+                )
+                dshocsinh = utils.CalDiemTbHocSinh(diemhk1=diemhk1, diemhk2= diemhk2, max_15phut_hocki1 = max_15phut_hocki1,
+                                             max_1tiet_hocki1= max_1tiet_hocki1, max_15phut_hocki2 = max_15phut_hocki2,
+                                             max_1tiet_hocki2=max_1tiet_hocki2, namtaolop= namtaolop)
 
-                hocsinhs = dao.GetHocSinhByTenHoTenEmailPhone(inputsearch=data['searchhocsinh'], namtaolop=namtaolop)
-
-                hocsinhs = [hs['MaHocSinh'] for hs in hocsinhs]
-
-                diemhk1 = dao.LoadLop(listmahocsinh=hocsinhs, key="diem",
-                                      mamonhoc=mamonhoc, mahocki='1_' + namhoc)
-
-                diemhk2 = dao.LoadLop(listmahocsinh=hocsinhs, key="diem",
-                                      mamonhoc=mamonhoc, mahocki='2_' + namhoc)
-
-                max_15phut_hocki1 = diemhk1['max15phut']
-                max_1tiet_hocki1 = diemhk1['max1tiet']
-
-                max_15phut_hocki2 = diemhk2['max15phut']
-                max_1tiet_hocki2 = diemhk2['max1tiet']
+                return render_template('xuatdiem.html', dshocsinh=dshocsinh,
+                                       dslopcheckbox=dslop, malop=data['dslop'], dskhois=dao.LoadKhoi(), key = "timkiem", **data)
 
         else:
 
@@ -884,24 +866,13 @@ def xuatdiemlop():
             max_15phut_hocki2 = diemhk2['max15phut']
             max_1tiet_hocki2 = diemhk2['max1tiet']
 
-        for i in range(len(diemhk1['diemdshocsinh'])):
+        dshocsinh = utils.CalDiemTbHocSinh(diemhk1=diemhk1, diemhk2=diemhk2, max_15phut_hocki1=max_15phut_hocki1,
+                                           max_1tiet_hocki1=max_1tiet_hocki1, max_15phut_hocki2=max_15phut_hocki2,
+                                           max_1tiet_hocki2=max_1tiet_hocki2)
 
-            dshocsinh.append(utils.DiemHocSinh(mahocsinh=diemhk1['diemdshocsinh'][i]['MaHocSinh'], hoten=diemhk1['diemdshocsinh'][i]['HoTen'],
-                                                listdiem15phuthk1=diemhk1['diemdshocsinh'][i]['15phut'],
-                                                listdiem1tiethk1= diemhk1['diemdshocsinh'][i]['1tiet'],
-                                                listdiem15phuthk2=diemhk2['diemdshocsinh'][i]['15phut'],
-                                                listdiem1tiethk2=diemhk2['diemdshocsinh'][i]['1tiet'],
-                                                listdiemcuoikihk1= diemhk1['diemdshocsinh'][i]['diemthi'],
-                                                listdiemcuoikihk2=diemhk2['diemdshocsinh'][i]['diemthi'],
-                                                max_15phut_hocki1=max_15phut_hocki1,
-                                                max_1tiet_hocki1=max_1tiet_hocki1,
-                                                max_15phut_hocki2=max_15phut_hocki2,
-                                                max_1tiet_hocki2=max_1tiet_hocki2))
-
-        dslop = dao.LoadLopEdHoc()
 
         return render_template('xuatdiem.html', dshocsinh=dshocsinh,
-                               dslopcheckbox=dslop, malop=data['dslop'], dskhoi=dao.LoadKhoi(), **data)
+                               dslopcheckbox=dslop, malop=data['dslop'], dskhois=dao.LoadKhoi(), **data)
     return redirect(url_for('index'))
 
 
