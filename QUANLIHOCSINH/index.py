@@ -1,5 +1,4 @@
-import itertools
-import math
+
 from datetime import datetime
 
 from QUANLIHOCSINH import app, login
@@ -332,11 +331,12 @@ def diemdshocsinh(malop, monhoc, hocky, namhoc, state):
         return jsonify({'success': True,
                         'state': "Lưu thông tin thành công!"})
     else:
-
+        flag = True
         if malop not in session:
             session[malop] = []
 
         for info in diemdshocsinh:
+
             if info.get('maHocSinh') == 'subHeader':
                 continue
             hs_diem = {
@@ -349,16 +349,12 @@ def diemdshocsinh(malop, monhoc, hocky, namhoc, state):
             }
             session[malop].append(hs_diem)
 
-        session.modified = True
-        for i in session[malop]:
-            print(
-                f"MaHocSinh: {i.get('MaHocSinh', 'N/A')}, "
-                f"HoTen: {i.get('HoTen', 'N/A')}, "
-                f"15phut: {i.get('15phut', 'N/A')}, "
-                f"1tiet: {i.get('1tiet', 'N/A')}, "
-                f"DiemThi: {i.get('diemthi', 'N/A')}"
-            )
+            flag =  utils.check_diem(info['diem15phut'],info['diem1tiet'], info['diemthi'] )
+            if not flag:
+                return jsonify({'success': False,
+                                'state': "Điểm không hợp lệ ( 0 <= điểm <= 10.0 )!"})
 
+        session.modified = True
         return jsonify({'success': True,
                         'state': "Lưu thông tin thành công!"})
 
@@ -801,10 +797,6 @@ def nhapdiemlop():
     return redirect(url_for('index'))
 
 
-# @app.route('user/nhapdiem/timkiemhocsinh')
-# def nhapdiemtimkiemhocsinh():
-
-
 @app.route('/user/xuatdiem', methods=['GET', 'POST'])
 def xuatdiemlop():
     if request.method == 'POST':
@@ -941,24 +933,6 @@ def xuatdiemlop():
 #     return jsonify(suggestionEdOfKeyword)
 
 
-@app.route('/user/danhsachlop')
-def danhsachlop():
-    solop = int(dao.SoLop((app.config["MAX_SS_LOP"])))
-
-    page = int(request.args.get('page', 1))
-
-    malop = 'L10A' + str(page) + '_' + dao.CurrentYear()
-
-    lophocsinh = dao.LoadLop(malop=malop, key="info")
-
-    dshocsinhnotlop = dao.HocSinhNotLop()
-
-    return render_template("danhsachlop.html", lophocsinh=lophocsinh,
-                           solop=solop,
-                           dshocsinhnotlop=dshocsinhnotlop,
-                           lop='10A' + str(page),
-                           dskhoi=dao.LoadKhoi())
-
 
 @app.route('/user/dieuchinhdanhsachlop/sapxeptudau', methods=['POST'])
 def sapxeptudau():
@@ -1067,6 +1041,9 @@ def loadsolop(value):
 @login.user_loader
 def user_load(id):
     return dao.Get_User_By_ID(id=id)
+
+
+
 @app.route('/login-admin',methods=["post"])
 def login_admin_process():
     username=request.form.get('username')
@@ -1076,6 +1053,8 @@ def login_admin_process():
         login_user(user)
 
     return redirect('/admin')
+
+
 if __name__ == "__main__":
     from QUANLIHOCSINH.admin import *
 

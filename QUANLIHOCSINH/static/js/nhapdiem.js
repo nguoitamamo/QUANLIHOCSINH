@@ -190,6 +190,11 @@ lop.addEventListener('change', function () {
 
 
 function saveTableData(state) {
+
+
+    errorContainer.style.display = "none";
+
+
     diemhocsinh = GetDataTable()
 
     console.log(diemhocsinh)
@@ -216,10 +221,14 @@ function saveTableData(state) {
         .then(data => {
             if (data.success) {
 
-                errorText.innerText = data.state; // Hiển thị nội dung lỗi
-                errorContainer.style.display = "block";
+                errorText.innerText = data.state;
+
+
+            } else {
+                errorText.innerText = data.state;
 
             }
+            errorContainer.style.display = "block";
         })
 
 
