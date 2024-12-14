@@ -1048,8 +1048,8 @@ def user_load(id):
 def login_admin_process():
     username=request.form.get('username')
     password=request.form.get('password')
-    user=dao.auth_user(username=username,password=password,role=models.Role.Admin)
-    if user:
+    user=dao.Check_login(username=username,password=password)
+    if user.role == models.Role.Admin:
         login_user(user)
 
     return redirect('/admin')

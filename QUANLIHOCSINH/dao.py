@@ -32,43 +32,16 @@ def Load_MonHoc():
 def load_hoc_ki():
     return models.HocKi.query.all()
 
-def auth_user(username,password,role=None):
-    password=str(hashlib.md5(password.strip().encode('utf-8')).hexdigest())
-    A =models.Account.query.filter(models.Account.TenDangNhap.__eq__(username.strip()),
-                                   models.Account.MatKhau.__eq__(password))
-    if role:
-        A = A.filter(models.Account.role.__eq__(models.Role.Admin))
-
-    return A.first()
-
-def them():
-
-    idac = "Admin123"
-    password_hash = str(hashlib.md5("123".encode('utf-8')).hexdigest())
-
-
-    user = models.Account(id= idac,
-                          TenDangNhap= "Admin",
-                          MatKhau=password_hash,
-                          Active = True,
-                          role = models.Role.Admin)
-
-    db.session.add(user)
-
-    inforHocSinh = models.UserInfor(UserID=idac, Ho="Phan", Ten="Thanh Trinh", NgaySinh="2004-12-11",
-                                    GioiTinh="Nam", DiaChi="Bình định", Email="2251052129trinh@ou.edu.vn",
-                                    Image=None)
-    db.session.add(inforHocSinh)
-
-    db.session.commit()
 def Check_login(username, password):
     if username and password:
         passw = str(hashlib.md5(password.strip().encode('utf-8')).hexdigest())
-        return models.Account.query.filter(
+        return  models.Account.query.filter(
             models.Account.TenDangNhap.__eq__(username.strip()),
             models.Account.MatKhau.__eq__(passw.strip()),
             models.Account.Active.__eq__(True)
         ).first()
+
+
 
 def Check_Email(email):
     userinfor = models.UserInfor.query.filter(models.UserInfor.Email.__eq__(email)).first()
@@ -867,24 +840,24 @@ Ho = ["Phan", "Ly", "Thanh", "La", "Hoang"]
 Ten = ["Trung", "Trinh", "A", "D", "E", "G", "B"]
 
 
-# def them():
-#     for i in range(3000, 3031):
-#         idac = "HS" + str(Get_Cnt_Accout_Current()) + "_" + str(random.randint(10, 99))
-#         hocsinh = models.HocSinh(MaHocSinh=idac, DiemTbDauVao=float(random.randint(1, 10)))
-#         db.session.add(hocsinh)
-#
-#         password_hash = hashlib.md5(str(i).encode('utf-8')).hexdigest()
-#
-#         accoutHocSinh = models.Account(id=idac, TenDangNhap="HocSinhmoi" + str(i), MatKhau=password_hash,
-#                                        role=models.Role.HocSinh)
-#         db.session.add(accoutHocSinh)
-#
-#         inforHocSinh = models.UserInfor(UserID=idac, Ho=Ho[(i % 5)], Ten=Ten[(i % 7)], NgaySinh="2008-11-12",
-#                                         GioiTinh="Nam", DiaChi="Bình định", Email="test" + str(i) + "@gmail.com",
-#                                         Image=None)
-#         db.session.add(inforHocSinh)
-#
-#         db.session.commit()
+def them():
+    for i in range(3000, 3031):
+        idac = "HS" + str(Get_Cnt_Accout_Current()) + "_" + str(random.randint(10, 99))
+        hocsinh = models.HocSinh(MaHocSinh=idac, DiemTbDauVao=float(random.randint(1, 10)))
+        db.session.add(hocsinh)
+
+        password_hash = hashlib.md5(str(i).encode('utf-8')).hexdigest()
+
+        accoutHocSinh = models.Account(id=idac, TenDangNhap="HocSinhmoi" + str(i), MatKhau=password_hash,
+                                       role=models.Role.HocSinh)
+        db.session.add(accoutHocSinh)
+
+        inforHocSinh = models.UserInfor(UserID=idac, Ho=Ho[(i % 5)], Ten=Ten[(i % 7)], NgaySinh="2008-11-12",
+                                        GioiTinh="Nam", DiaChi="Bình định", Email="test" + str(i) + "@gmail.com",
+                                        Image=None)
+        db.session.add(inforHocSinh)
+
+        db.session.commit()
 
 
 # c
@@ -895,28 +868,10 @@ Ten = ["Trung", "Trinh", "A", "D", "E", "G", "B"]
 #     db.session.commit()
 
 
-def them():
-    idac = "Admin123"
-    password_hash = str(hashlib.md5("123".encode('utf-8')).hexdigest())
 
-    user = models.Account(id=idac,
-                          TenDangNhap="Admin",
-                          MatKhau=password_hash,
-                          Active=True,
-                          role=models.Role.Admin)
-
-    db.session.add(user)
-
-    inforHocSinh = models.UserInfor(UserID=idac, Ho="Phan", Ten="Thanh Trinh", NgaySinh="2004-12-11",
-                                    GioiTinh="Nam", DiaChi="Bình định", Email="2251052129trinh@ou.edu.vn",
-                                    Image=None)
-    db.session.add(inforHocSinh)
-
-    db.session.commit()
 
 if __name__ == '__main__':
     with app.app_context():
-        them()
         # lop_hocsinh = LoadLop(malop = 'L10A1_2023',key = "diem",  mamonhoc='MH1', mahocki=1)
         #
         #
@@ -927,6 +882,5 @@ if __name__ == '__main__':
         #         print(f"trung binh: { sum(i['15phut']) / len(i['15phut']) }")
         # print(GetLopByMa(mahocsinh="HS587_52", namtaolop="2023"))
         # print(GetHocSinhByTenHoTenEmailPhone(inputsearch= "Trinh", namtaolop="2023") )
-
 
         print(GetHocSinhByTenHoTenEmailPhone(inputsearch="La", namtaolop="2023"))
