@@ -31,6 +31,7 @@ def Load_Permission():
 def Load_MonHoc():
     return MonHoc.query.all()
 
+<<<<<<< HEAD
 
 def load_hoc_ki():
     return HocKi.query.all()
@@ -76,6 +77,19 @@ def Check_login(username, password):
         ).first()
 
 
+=======
+def Check_login(username, password):
+    if username and password:
+        passw = str(hashlib.md5(password.strip().encode('utf-8')).hexdigest())
+        return  models.Account.query.filter(
+            models.Account.TenDangNhap.__eq__(username.strip()),
+            models.Account.MatKhau.__eq__(passw.strip()),
+            models.Account.Active.__eq__(True)
+        ).first()
+
+
+
+>>>>>>> 3de3ed47729919e0d52d1d7750c4da4dad38ddd6
 def Check_Email(email):
     userinfor = UserInfor.query.filter(UserInfor.Email.__eq__(email)).first()
     return userinfor
@@ -872,6 +886,7 @@ Ho = ["Phan", "Ly", "Thanh", "La", "Hoang"]
 Ten = ["Trung", "Trinh", "A", "D", "E", "G", "B"]
 
 
+<<<<<<< HEAD
 # def them():
 #     for i in range(3000, 3031):
 #         idac = "HS" + str(Get_Cnt_Accout_Current()) + "_" + str(random.randint(10, 99))
@@ -890,6 +905,26 @@ Ten = ["Trung", "Trinh", "A", "D", "E", "G", "B"]
 #         db.session.add(inforHocSinh)
 #
 #         db.session.commit()
+=======
+def them():
+    for i in range(3000, 3031):
+        idac = "HS" + str(Get_Cnt_Accout_Current()) + "_" + str(random.randint(10, 99))
+        hocsinh = models.HocSinh(MaHocSinh=idac, DiemTbDauVao=float(random.randint(1, 10)))
+        db.session.add(hocsinh)
+
+        password_hash = hashlib.md5(str(i).encode('utf-8')).hexdigest()
+
+        accoutHocSinh = models.Account(id=idac, TenDangNhap="HocSinhmoi" + str(i), MatKhau=password_hash,
+                                       role=models.Role.HocSinh)
+        db.session.add(accoutHocSinh)
+
+        inforHocSinh = models.UserInfor(UserID=idac, Ho=Ho[(i % 5)], Ten=Ten[(i % 7)], NgaySinh="2008-11-12",
+                                        GioiTinh="Nam", DiaChi="Bình định", Email="test" + str(i) + "@gmail.com",
+                                        Image=None)
+        db.session.add(inforHocSinh)
+
+        db.session.commit()
+>>>>>>> 3de3ed47729919e0d52d1d7750c4da4dad38ddd6
 
 
 # c
@@ -900,10 +935,8 @@ Ten = ["Trung", "Trinh", "A", "D", "E", "G", "B"]
 #     db.session.commit()
 
 
-def them():
-    idac = "Admin123"
-    password_hash = str(hashlib.md5("123".encode('utf-8')).hexdigest())
 
+<<<<<<< HEAD
     user = Account(id=idac,
                           TenDangNhap="Admin",
                           MatKhau=password_hash,
@@ -918,11 +951,12 @@ def them():
     db.session.add(inforHocSinh)
 
     db.session.commit()
+=======
+>>>>>>> 3de3ed47729919e0d52d1d7750c4da4dad38ddd6
 
 
 if __name__ == '__main__':
     with app.app_context():
-        them()
         # lop_hocsinh = LoadLop(malop = 'L10A1_2023',key = "diem",  mamonhoc='MH1', mahocki=1)
         #
         #

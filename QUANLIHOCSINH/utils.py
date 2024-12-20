@@ -17,6 +17,47 @@ def rand_Pass_Confirm_Email():
     return str(random.randint(10000, 99999))
 
 
+def checklistdiem(listdiem):
+    for diem in listdiem:
+        try:
+            if float(diem) > 10.0 or float(diem) < 0.0:
+                return False
+        except ValueError:
+            if diem =='':
+                return True
+            return False
+    return True
+
+
+def check_diem(diem15phut, diem1tiet, diemthi):
+
+    if not checklistdiem(diem15phut):
+        return False
+    if not checklistdiem(diem1tiet):
+        return False
+
+    try:
+        if float(diemthi) > 10.0:
+            return False
+    except ValueError:
+        if diemthi == '':
+            return True
+        return False
+
+    return True
+
+
+
+info = {
+    "diem15phut": [ "9.0", "9.0", "11"],
+    "diem1tiet": [ "", "", "" ],
+    "diemthi": "10.0"
+}
+
+
+
+
+
 def Send_Email(subject, content, email_rec):
     email = "2251052130truong@ou.edu.vn"
     passw = "18072004@Hnt"
@@ -195,3 +236,9 @@ def CalTinhDiemTb(listdiem15phut, listdiem1tiet, listcuoiki, max15phut, max1tiet
         cuoiki = listcuoiki[0]
 
     return round(tb15phut * app.config["15PHUT"] + tb1tiet * app.config["1TIET"] + cuoiki * app.config["CUOIKY"], 1)
+
+
+if __name__ == '__main__':
+    with app.app_context():
+        flag = check_diem(info["diem15phut"], info["diem1tiet"], info["diemthi"])
+        print(f"Điểm hợp lệ: {flag}")
